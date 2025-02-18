@@ -7,10 +7,13 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      # Checkout the repository and its submodules
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
           submodules: true
 
+      # Cache the dependencies to speed up future runs
       - name: Check cache
         run: |
           echo upstream_heads=`git ls-remote https://github.com/roothide/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
@@ -22,18 +25,39 @@ jobs:
           path: ${{ github.workspace }}/theos
           key: ${{ runner.os }}-${{ env.upstream_heads }}
 
-      - name: Prepare Theos
-        uses: axs66/theos-action@main
+      # Set environment variables for Theos setup
+      - name: Set environment variables
+        run: |
+          echo "GITHUB_WORKSPACE=${{ github.workspace }}" >> $GITHUB_ENV
 
+      # Call the CI workflow from the theos-action repo
+      - name: Call the CI workflow from theos-action
+        uses: axs66/theos-action/.github/workflows/CI.yml@V1.0.0
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}  # Pass the workspace variable
+
+      # Theos setup verification (if you still need this step after calling CI.yml)
+      - name: Verify Theos Setup
+        run: |
+          if [ ! -d "${{ github.workspace }}/theos" ]; then
+            echo "Theos installation failed. Please check the Theos setup step."
+            exit 1
+          fi
+          echo "Theos setup completed successfully."
+
+      # Clean up old packages and start building the package
       - name: Build package
         run: |
-          rm -f packages/*
-          make package FINALPACKAGE=1
-          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1
-          make package THEOS_PACKAGE_SCHEME=roothide FINALPACKAGE=1
+          echo "Starting to build the package..."
+          rm -f packages/*  # 清理旧包
+          make package FINALPACKAGE=1  # 构建普通包
+          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1  # 构建 rootless 包
+          make package THEOS_PACKAGE_SCHEME=roothide FINALPACKAGE=1  # 构建 roothide 包
+          echo "Package build completed."
 
+      # Upload the generated Deb packages as artifacts
       - name: Upload specific Deb packages
         uses: actions/upload-artifact@v4.3.3
         with:
           name: DYYY
-          path: ${{ github.workspace }}/packages/*.deb
+          path: ${{ github.workspace }}/packages/*.deb  # 上传生成的 .deb 包
