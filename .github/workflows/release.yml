@@ -27,7 +27,7 @@ jobs:
 
       # Call the CI.yml workflow from the theos-action repo
       - name: Call the CI workflow from theos-action
-        uses: axs66/theos-action/.github/workflows/CI.yml@V1.0.0
+        uses: axs66/theos-action/.github/workflows/ci.yml
 
       # Theos setup verification (if you still need this step after calling CI.yml)
       - name: Verify Theos Setup
