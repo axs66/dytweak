@@ -25,11 +25,11 @@ jobs:
           path: ${{ github.workspace }}/theos
           key: ${{ runner.os }}-${{ env.upstream_heads }}
 
-      # Prepare Theos by using axs66/theos-action
-      - name: Prepare Theos
-        uses: axs66/theos-action@V1.0.0
+      # Call the CI.yml workflow from the theos-action repo
+      - name: Call the CI workflow from theos-action
+        uses: axs66/theos-action/.github/workflows/CI.yml@V1.0.0
 
-      # Verify if Theos was set up correctly
+      # Theos setup verification (if you still need this step after calling CI.yml)
       - name: Verify Theos Setup
         run: |
           if [ ! -d "${{ github.workspace }}/theos" ]; then
