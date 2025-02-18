@@ -1,61 +1,72 @@
-# .github/workflows/CI.yml
+name: CI
 
-name: ci
-
-on:
+on: 
   push:
-    branches:
-      - main  # 触发的分支，可以根据需要修改
+  schedule:
+    - cron: '0 9 15 * *'  # 每月15号的9点UTC触发工作流
 
 jobs:
-  build:
-    runs-on: macos-latest
+  build-logos:
+    runs-on: ubuntu-latest  # 使用 Ubuntu 环境
 
     steps:
-      # Checkout the repository and its submodules
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v3
         with:
-          submodules: true
+          repository: Randomblock1/FleetsBGone
+          submodules: true  # 检出子模块
 
-      # Cache the dependencies to speed up future runs
-      - name: Check cache
+      - name: Install dependencies and setup Theos
         run: |
-          echo upstream_heads=`git ls-remote https://github.com/roothide/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
+          sudo apt-get update
+          # 尝试安装 libtinfo5，如果没有找到则安装 libtinfo-dev
+          sudo apt-get install -y build-essential fakeroot libz3-dev rsync curl perl unzip git libplist-utils
+          if ! dpkg -s libtinfo5 > /dev/null 2>&1; then
+            sudo apt-get install -y libtinfo-dev  # 如果 libtinfo5 不存在，安装 libtinfo-dev
+          fi
 
-      - name: Use cache
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/theos
-          key: ${{ runner.os }}-${{ env.upstream_heads }}
+      - name: Setup environment
+        run: echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
 
-      # Prepare Theos by using axs66/theos-action
-      - name: Prepare Theos
-        uses: axs66/theos-action@main
-
-      # Verify if Theos was set up correctly
-      - name: Verify Theos Setup
+      - name: Download Theos
         run: |
           if [ ! -d "${{ github.workspace }}/theos" ]; then
-            echo "Theos installation failed. Please check the Theos setup step."
-            exit 1
+            git clone https://github.com/roothide/theos ${{ github.workspace }}/theos --recursive
+            echo "Theos successfully downloaded."
+          else
+            echo "Theos already cached."
           fi
-          echo "Theos setup completed successfully."
 
-      # Clean up old packages and start building the package
+      - name: Get toolchain (Linux)
+        run: |
+          if [[ "$(ls ${{ github.workspace }}/theos/sdks)" ]]; then
+            echo "Linux toolchain already cached, skipping..."
+          else
+            TMP_DL=$(mktemp -d)
+            wget --no-verbose https://github.com/kabiroberai/swift-toolchain-linux/releases/download/v2.3.0/swift-5.8-ubuntu22.04.tar.xz -P $TMP_DL
+            tar -xvf $TMP_DL/swift-5.8-ubuntu22.04.tar.xz -C ${{ github.workspace }}/theos/toolchain
+            rm -Rf $TMP_DL
+          fi
+
+      - name: Get SDKs
+        run: |
+          if [[ "$(ls ${{ github.workspace }}/theos/sdks)" ]]; then
+            echo "Theos SDKs already cached, skipping..."
+          else
+            cd ${{ github.workspace }}/theos/sdks
+            wget --no-verbose https://github.com/theos/sdks/archive/master.zip
+            unzip -o master.zip  # 使用 unzip 解压
+            mv sdks-master/*.sdk ${{ github.workspace }}/theos/sdks
+            rm -r master.zip sdks-master
+          fi
+
       - name: Build package
         run: |
-          echo "Starting to build the package..."
           rm -f packages/*  # 清理旧包
-          make package FINALPACKAGE=1  # 构建普通包
-          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1  # 构建 rootless 包
-          make package THEOS_PACKAGE_SCHEME=roothide FINALPACKAGE=1  # 构建 roothide 包
-          echo "Package build completed."
+          make package FINALPACKAGE=1  # 构建 package
 
-      # Upload the generated Deb packages as artifacts
-      - name: Upload specific Deb packages
-        uses: actions/upload-artifact@v4.3.3
+      - name: Upload package
+        uses: actions/upload-artifact@v4
         with:
-          name: DYYY
-          path: ${{ github.workspace }}/packages/*.deb  # 上传生成的 .deb 包
+          name: "Package built by ubuntu-latest"
+          path: ${{ github.workspace }}/packages/*.deb  # 上传生成的 .deb 文件
