@@ -7,10 +7,13 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      # Checkout the repository and its submodules
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
           submodules: true
 
+      # Cache the dependencies to speed up future runs
       - name: Check cache
         run: |
           echo upstream_heads=`git ls-remote https://github.com/roothide/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
@@ -22,9 +25,11 @@ jobs:
           path: ${{ github.workspace }}/theos
           key: ${{ runner.os }}-${{ env.upstream_heads }}
 
+      # Prepare Theos by using axs66/theos-action
       - name: Prepare Theos
         uses: axs66/theos-action@V1.0.0
 
+      # Verify if Theos was set up correctly
       - name: Verify Theos Setup
         run: |
           if [ ! -d "${{ github.workspace }}/theos" ]; then
@@ -33,6 +38,7 @@ jobs:
           fi
           echo "Theos setup completed successfully."
 
+      # Clean up old packages and start building the package
       - name: Build package
         run: |
           echo "Starting to build the package..."
@@ -42,6 +48,7 @@ jobs:
           make package THEOS_PACKAGE_SCHEME=roothide FINALPACKAGE=1  # 构建 roothide 包
           echo "Package build completed."
 
+      # Upload the generated Deb packages as artifacts
       - name: Upload specific Deb packages
         uses: actions/upload-artifact@v4.3.3
         with:
