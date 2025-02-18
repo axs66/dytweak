@@ -32,7 +32,7 @@ jobs:
 
       # Prepare Theos by using axs66/theos-action
       - name: Prepare Theos
-        uses: axs66/theos-action@V1.0.0
+        uses: axs66/theos-action@Vmain
 
       # Verify if Theos was set up correctly
       - name: Verify Theos Setup
