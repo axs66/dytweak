@@ -25,15 +25,25 @@ jobs:
       - name: Prepare Theos
         uses: axs66/theos-action@main
 
+      - name: Verify Theos Setup
+        run: |
+          if [ ! -d "${{ github.workspace }}/theos" ]; then
+            echo "Theos installation failed. Please check the Theos setup step."
+            exit 1
+          fi
+          echo "Theos setup completed successfully."
+
       - name: Build package
         run: |
-          rm -f packages/*
-          make package FINALPACKAGE=1
-          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1
-          make package THEOS_PACKAGE_SCHEME=roothide FINALPACKAGE=1
+          echo "Starting to build the package..."
+          rm -f packages/*  # 清理旧包
+          make package FINALPACKAGE=1  # 构建普通包
+          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1  # 构建 rootless 包
+          make package THEOS_PACKAGE_SCHEME=roothide FINALPACKAGE=1  # 构建 roothide 包
+          echo "Package build completed."
 
       - name: Upload specific Deb packages
         uses: actions/upload-artifact@v4.3.3
         with:
           name: DYYY
-          path: ${{ github.workspace }}/packages/*.deb
+          path: ${{ github.workspace }}/packages/*.deb  # 上传生成的 .deb 包
