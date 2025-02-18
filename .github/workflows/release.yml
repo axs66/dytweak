@@ -23,7 +23,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.upstream_heads }}
 
       - name: Prepare Theos
-        uses: axs66/theos-action@main
+        uses: axs66/theos-action@v1.0.0
 
       - name: Verify Theos Setup
         run: |
