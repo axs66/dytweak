@@ -63,10 +63,11 @@ jobs:
       - name: Build package
         run: |
           rm -f packages/*  # 清理旧包
+          export ARCHS=arm64  # 设置架构为 arm64
           make package FINALPACKAGE=1  # 构建 package
 
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: "Package built by ubuntu-latest"
+          name: "DYYY"
           path: ${{ github.workspace }}/packages/*.deb  # 上传生成的 .deb 文件
