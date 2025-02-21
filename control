@@ -1,6 +1,6 @@
-Package: com.huami.dyyy
+Package: com.axs66.dyyy
 Name: DYYY
-Version: 1.9-9+1
+Version: 1.9-9
 Description: 仅供学习交流，请在 24 小时内自觉删除。
 Homepage: https://github.com/huami1314/DYYY
 Section: Tweaks
@@ -8,4 +8,4 @@ Depends: firmware (>= 5.0), mobilesubstrate
 Priority: optional
 Maintainer: huami
 Author: huami
-Architecture: iphoneos-arm
+Architecture: iphoneos-arm iphoneos-arm64 iphoneos-arm64e
