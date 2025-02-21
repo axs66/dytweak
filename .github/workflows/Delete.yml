@@ -1,17 +1,17 @@
-name: Delete DYYY Releases
+name: Delete 0221 Releases
 
 on:
   workflow_dispatch:  # 允许手动触发工作流
 
 jobs:
-  delete_dyyy_releases:
+  delete_0221_releases:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Delete DYYY releases
+      - name: Delete 0221 releases
         run: |
           # 列出所有 releases 的标签，筛选出 DYYY 开头的标签
           releases=$(gh release list --json tagName -q '.[].tagName' | jq -r '.[]' | grep "^0221")
