@@ -1,10 +1,10 @@
-name: Delete 0221 Releases
+name: Delete DYYY Releases
 
 on:
   workflow_dispatch:  # 允许手动触发工作流
 
 jobs:
-  delete_0221_releases:
+  delete_dyyy_releases:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,12 +19,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT }}  # 使用 GitHub 令牌进行身份验证
 
-      - name: Delete 0221 releases
+      - name: Delete DYYY releases
         run: |
-          # 列出所有 releases 的标签，筛选出 0221 开头的标签
-          releases=$(gh release list --json tagName -q '.[].tagName' | jq -r '.[]' | grep "^0221")
+          # 列出所有 releases 的标签，筛选出 DYYY 开头的标签
+          releases=$(gh release list --json tagName -q '.[].tagName' | jq -r '.[]' | grep "^DYYY")
           if [ -z "$releases" ]; then
-            echo "No releases found matching 0221"
+            echo "No releases found matching DYYY"
             exit 0
           fi
           for release in $releases; do
