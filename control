@@ -1,11 +1,11 @@
 Package: com.axs66.dyyy
-Name: DYYY
-Version: 1.9-9+1
+Name: 抖音净化
+Version: 1.0.0
 Description: 仅供学习交流，请在 24 小时内自觉删除。
-Homepage: https://github.com/huami1314/DYYY
+Homepage: https://github.com/axs66
 Section: Tweaks
 Depends: firmware (>= 5.0), mobilesubstrate
 Priority: optional
-Maintainer: huami
-Author: huami
+Maintainer: Axs
+Author: Axs
 Architecture: iphoneos-arm iphoneos-arm64 iphoneos-arm64e
