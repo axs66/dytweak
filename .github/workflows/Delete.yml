@@ -15,21 +15,26 @@ jobs:
         run: |
           # 获取所有 releases 的标签，调试输出
           releases=$(gh release list --json tagName -q '.[].tagName')
-          echo "Releases: $releases"  # 打印原始输出查看格式
+          echo "Releases raw output: $releases"  # 打印原始输出查看格式
         env:
           GH_TOKEN: ${{ secrets.PAT }}  # 使用 GitHub 令牌进行身份验证
 
       - name: Delete DYYY releases
         run: |
-          # 列出所有 releases 的标签，筛选出 DYYY 开头的标签
-          releases=$(gh release list --json tagName -q '.[].tagName' | jq -r '.[]' | grep "^DYYY")
-          if [ -z "$releases" ]; then
+          # 获取 releases 标签并筛选出 DYYY 开头的标签
+          releases=$(gh release list --json tagName -q '.[].tagName')
+          echo "Releases: $releases"  # 输出 releases 列表以便检查
+
+          # 如果没有找到 DYYY 开头的标签，退出
+          if echo "$releases" | grep -q "^DYYY"; then
+            echo "Deleting releases starting with DYYY"
+            echo "$releases" | grep "^DYYY" | while read release; do
+              echo "Deleting release $release"
+              gh release delete $release --yes
+            done
+          else
             echo "No releases found matching DYYY"
             exit 0
           fi
-          for release in $releases; do
-            echo "Deleting release $release"
-            gh release delete $release --yes
-          done
         env:
           GH_TOKEN: ${{ secrets.PAT }}  # 使用 GitHub 令牌进行身份验证
