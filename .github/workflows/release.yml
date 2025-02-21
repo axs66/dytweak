@@ -23,7 +23,7 @@ jobs:
           key: ${{ runner.os }}-theos-sdk-version
 
       - name: Prepare Theos
-        uses: huami1314/theos-action@main
+        uses: axs66/theos-action@main
 
       - name: Build package
         run: |
@@ -33,6 +33,11 @@ jobs:
 
       - name: List generated Deb packages
         run: ls ${{ github.workspace }}/packages
+
+      - name: Create GitHub Release
+        id: release
+        run: |
+          gh release create v1.0.0 ${{ github.workspace }}/packages/*.deb --title "Release v1.9-9+1" --notes "Automated release of .deb files"
 
       - name: Upload specific Deb packages
         uses: actions/upload-artifact@v4.3.3
