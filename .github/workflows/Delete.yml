@@ -25,10 +25,10 @@ jobs:
           releases=$(gh release list --json tagName -q '.[].tagName')
           echo "Releases: $releases"  # 输出 releases 列表以便检查
 
-          # 使用 grep -F 以禁用正则表达式，精确匹配以 v1.8-9+ 开头的标签
-          if echo "$releases" | grep -F "^v1.8-9+"; then
+          # 使用 grep -E 和转义的 + 确保它按字符匹配
+          if echo "$releases" | grep -E "^v1\.8\-9\+"; then
             echo "Deleting releases starting with v1.8-9+"
-            echo "$releases" | grep -F "^v1.8-9+" | while read release; do
+            echo "$releases" | grep -E "^v1\.8\-9\+" | while read release; do
               echo "Deleting release $release"
               gh release delete "$release" --yes
             done
