@@ -14,7 +14,11 @@ jobs:
       - name: Delete DYYY releases
         run: |
           # 列出所有 releases 的标签，筛选出 DYYY 开头的标签
-          releases=$(gh release list --json tagName -q '.[].tagName' | grep "^DYYY")
+          releases=$(gh release list --json tagName -q '.[].tagName' | jq -r '.[]' | grep "^DYYY")
+          if [ -z "$releases" ]; then
+            echo "No releases found matching DYYY"
+            exit 0
+          fi
           for release in $releases; do
             echo "Deleting release $release"
             gh release delete $release --yes
