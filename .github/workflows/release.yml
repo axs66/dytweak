@@ -23,7 +23,7 @@ jobs:
           key: ${{ runner.os }}-theos-sdk-version
 
       - name: Prepare Theos
-        uses: huami1314/theos-action@main
+        uses: axs66/theos-action@main
 
       - name: Build package
         run: |
