@@ -1,73 +1,41 @@
 name: CI
 
-on: 
-  push:
-  schedule:
-    - cron: '0 9 15 * *'  # 每月15号的9点UTC触发工作流
+on: [push]
 
 jobs:
-  build-logos:
-    runs-on: ubuntu-latest  # 使用 Ubuntu 环境
+  build:
+    runs-on: macos-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          repository: Randomblock1/FleetsBGone
-          submodules: true  # 检出子模块
+          submodules: true
 
-      - name: Install dependencies and setup Theos
+      - name: Check cache
         run: |
-          sudo apt-get update
-          # 尝试安装 libtinfo5，如果没有找到则安装 libtinfo-dev
-          sudo apt-get install -y build-essential fakeroot libz3-dev rsync curl perl unzip git libplist-utils
-          if ! dpkg -s libtinfo5 > /dev/null 2>&1; then
-            sudo apt-get install -y libtinfo-dev  # 如果 libtinfo5 不存在，安装 libtinfo-dev
-          fi
+          echo upstream_heads=theos_version_commit-sdks_version_commit >> $GITHUB_ENV
 
-      - name: Setup environment
-        run: echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
+      - name: Use cache
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/theos
+          key: ${{ runner.os }}-theos-sdk-version
 
-      - name: Download Theos
-        run: |
-          if [ ! -d "${{ github.workspace }}/theos" ]; then
-            git clone https://github.com/roothide/theos ${{ github.workspace }}/theos --recursive
-            echo "Theos successfully downloaded."
-          else
-            echo "Theos already cached."
-          fi
-
-      - name: Get toolchain (Linux)
-        run: |
-          if [[ "$(ls ${{ github.workspace }}/theos/sdks)" ]]; then
-            echo "Linux toolchain already cached, skipping..."
-          else
-            TMP_DL=$(mktemp -d)
-            wget --no-verbose https://github.com/kabiroberai/swift-toolchain-linux/releases/download/v2.3.0/swift-5.8-ubuntu22.04.tar.xz -P $TMP_DL
-            tar -xvf $TMP_DL/swift-5.8-ubuntu22.04.tar.xz -C ${{ github.workspace }}/theos/toolchain
-            rm -Rf $TMP_DL
-          fi
-
-      - name: Get SDKs
-        run: |
-          if [[ "$(ls ${{ github.workspace }}/theos/sdks)" ]]; then
-            echo "Theos SDKs already cached, skipping..."
-          else
-            cd ${{ github.workspace }}/theos/sdks
-            wget --no-verbose https://github.com/theos/sdks/archive/master.zip
-            unzip -o master.zip  # 使用 unzip 解压
-            mv sdks-master/*.sdk ${{ github.workspace }}/theos/sdks
-            rm -r master.zip sdks-master
-          fi
+      - name: Prepare Theos
+        uses: huami1314/theos-action@main
 
       - name: Build package
         run: |
-          rm -f packages/*  # 清理旧包
-          export ARCHS=arm64  # 设置架构为 arm64
-          make package FINALPACKAGE=1  # 构建 package
+          rm -f ${{ github.workspace }}/packages/*.deb
+          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=roothide
 
-      - name: Upload package
-        uses: actions/upload-artifact@v4
+      - name: List generated Deb packages
+        run: ls ${{ github.workspace }}/packages
+
+      - name: Upload specific Deb packages
+        uses: actions/upload-artifact@v4.3.3
         with:
-          name: "DYYY"
-          path: ${{ github.workspace }}/packages/*.deb  # 上传生成的 .deb 文件
+          name: DYYY
+          path: ${{ github.workspace }}/packages/*.deb
