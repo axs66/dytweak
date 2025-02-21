@@ -37,10 +37,7 @@ jobs:
       - name: Create GitHub Release
         id: release
         run: |
-         LATEST_VERSION=$(gh release list --limit 1 --json tagName -q ".[0].tagName")
-         VERSION=$(echo $LATEST_VERSION | sed -E 's/([0-9]+\.[0-9]+)-([0-9]+)\+([0-9]+)/\1-\2/')
-         echo "New version: $VERSION"
-         gh release create $VERSION ${{ github.workspace }}/packages/*.deb --title "Release $VERSION" --notes "Automated release of .deb files"
+         gh release create V1.9-9 ${{ github.workspace }}/packages/*.deb --title "Release V1.9-9" --notes "Automated release of .deb files"
         env:
           GH_TOKEN: ${{ secrets.PAT }}  # 这里设置了 GitHub Token 用于授权
 
