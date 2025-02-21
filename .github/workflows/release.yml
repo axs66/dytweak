@@ -1,6 +1,10 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'Makefile'
 
 jobs:
   build:
@@ -31,21 +35,34 @@ jobs:
           make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=roothide
 
-      - name: List generated Deb packages
-        run: ls ${{ github.workspace }}/packages
+      - name: Check if new Debs exist
+        id: check-deb
+        run: |
+          if ls ${{ github.workspace }}/packages/*.deb 1> /dev/null 2>&1; then
+            echo "has_deb=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_deb=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create GitHub Release
+        if: steps.check-deb.outputs.has_deb == 'true'
         id: release
         run: |
           LATEST_VERSION=$(gh release list --limit 1 --json tagName -q ".[0].tagName")
-          NEW_VERSION=$(echo $LATEST_VERSION | sed -E 's/([0-9]+\.[0-9]+)-([0-9]+)\+([0-9]+)/\1-\2+\3/' | awk -F '+' '{print $1"+"$2+1}')
-          VERSION=$NEW_VERSION
-          gh release create $VERSION ${{ github.workspace }}/packages/*.deb --title "DYYY $VERSION" --notes "Automated release of .deb files"
+          if [ -z "$LATEST_VERSION" ]; then
+            VERSION="1.0.0+1"
+          else
+            VERSION=$(echo "$LATEST_VERSION" | awk -F '+' '{printf "%s+%d", $1, $2+1}')
+          fi
+          gh release create $VERSION ${{ github.workspace }}/packages/*.deb \
+            --title "DYYY $VERSION" \
+            --notes "Automated release of .deb files"
         env:
-          GH_TOKEN: ${{ secrets.PAT }}  # 这里设置了 GitHub Token 用于授权
+          GH_TOKEN: ${{ secrets.PAT }}
 
-      - name: Upload specific Deb packages
-        uses: actions/upload-artifact@v4.3.3
+      - name: Upload artifacts
+        if: steps.check-deb.outputs.has_deb == 'true'
+        uses: actions/upload-artifact@v4
         with:
           name: DYYY
           path: ${{ github.workspace }}/packages/*.deb
