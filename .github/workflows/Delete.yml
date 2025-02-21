@@ -1,0 +1,23 @@
+name: Delete DYYY Releases
+
+on:
+  workflow_dispatch:  # 允许手动触发工作流
+
+jobs:
+  delete_dyyy_releases:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Delete DYYY releases
+        run: |
+          # 列出所有 releases 的标签，筛选出 DYYY 开头的标签
+          releases=$(gh release list --json tagName -q '.[].tagName' | grep "^DYYY")
+          for release in $releases; do
+            echo "Deleting release $release"
+            gh release delete $release --yes
+          done
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}  # 使用 GitHub 令牌进行身份验证
