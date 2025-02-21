@@ -11,9 +11,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: List releases (for debugging)
+        run: |
+          # 获取所有 releases 的标签，调试输出
+          releases=$(gh release list --json tagName -q '.[].tagName')
+          echo "Releases: $releases"  # 打印原始输出查看格式
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}  # 使用 GitHub 令牌进行身份验证
+
       - name: Delete 0221 releases
         run: |
-          # 列出所有 releases 的标签，筛选出 DYYY 开头的标签
+          # 列出所有 releases 的标签，筛选出 0221 开头的标签
           releases=$(gh release list --json tagName -q '.[].tagName' | jq -r '.[]' | grep "^0221")
           if [ -z "$releases" ]; then
             echo "No releases found matching 0221"
