@@ -37,8 +37,18 @@ jobs:
       - name: Create GitHub Release
         id: release
         run: |
-         gh release create V1.9-9 ${{ github.workspace }}/packages/*.deb --title "Release V1.9-9" --notes "Automated release of .deb files"
-        env:
+         # 获取当前最新版本号
+         LATEST_VERSION=$(gh release list --limit 1 --json tagName -q ".[0].tagName")
+
+         # 提取版本号中的数字部分，增加1
+         NEW_VERSION=$(echo $LATEST_VERSION | sed -E 's/([0-9]+\.[0-9]+)-([0-9]+)\+([0-9]+)/\1-\2+\3/' | awk -F '+' '{print $1"+"$2+1}')
+
+         # 创建新的版本号
+         VERSION=$NEW_VERSION
+
+         # 创建新的 release
+         gh release create $VERSION ${{ github.workspace }}/packages/*.deb --title "Release $VERSION" --notes "Automated release of .deb files"
+       env:
           GH_TOKEN: ${{ secrets.PAT }}  # 这里设置了 GitHub Token 用于授权
 
       - name: Upload specific Deb packages
