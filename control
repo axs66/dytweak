@@ -9,3 +9,5 @@ Priority: optional
 Maintainer: Axs
 Author: Axs
 Architecture: iphoneos-arm iphoneos-arm64 iphoneos-arm64e
+Icon: https://axs66.github.io/repo/icon/dy.png
+Sileodepiction: https://axs66.github.io/repo/sileodepiction/dyjh/js.json
