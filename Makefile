@@ -23,7 +23,7 @@ INSTALL_TARGET_PROCESSES = Aweme
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = DYYY
+TWEAK_NAME = 抖音净化
 
 DYYY_FILES = DYYY.xm DYYYSettingViewController.m CityManager.m
 DYYY_CFLAGS = -fobjc-arc -Wno-error
