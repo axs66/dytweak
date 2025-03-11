@@ -37,7 +37,7 @@ jobs:
       - name: Create GitHub Release
         id: release
         run: |
-          VERSION=V2.0-9-END
+          VERSION=V2.1
           gh release create $VERSION ${{ github.workspace }}/packages/*.deb --title "DYYY $VERSION" --notes "Automated release of .deb files"
         env:
           GH_TOKEN: ${{ secrets.PAT }}  # 这里设置了 GitHub Token 用于授权
