@@ -1,4 +1,4 @@
-Package: com.Axs.dyjh
+Package: com.axs.dytweak
 Name: 抖音净化
 Version: 2.1-5
 Description: 仅供学习交流，请在 24 小时内自觉删除。
@@ -10,4 +10,4 @@ Maintainer: Axs
 Author: Axs
 Architecture: iphoneos-arm iphoneos-arm64 iphoneos-arm64e
 Icon: https://axs66.github.io/repo/icon/dy.png
-Sileodepiction: https://axs66.github.io/repo/sileodepiction/dyjh/js.json
+Sileodepiction: https://axs66.github.io/repo/sileodepiction/dytweak/js.json
