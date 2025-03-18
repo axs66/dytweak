@@ -105,7 +105,16 @@ void saveMedia(NSURL *mediaURL, MediaType mediaType, void (^completion)(void)) {
                 if (mediaType == MediaTypeVideo) {
                     [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:mediaURL];
                 } else if (mediaType == MediaTypeHeic) {
-                    [PHAssetChangeRequest creationRequestForAssetFromImageAtFileURL:mediaURL];
+                     //获取表情包的数据
+                    NSData *gifData = [NSData dataWithContentsOfURL:mediaURL];
+                    //创建相册资源
+                    PHAssetCreationRequest *request = [PHAssetCreationRequest creationRequestForAsset];
+                    //实例相册类资源参数
+                    PHAssetResourceCreationOptions *options = [[PHAssetResourceCreationOptions alloc] init];
+                    //定义表情包参数
+                    options.uniformTypeIdentifier = @"com.compuserve.gif"; 
+                    //保存表情包图片/gif动图
+                    [request addResourceWithType:PHAssetResourceTypePhoto data:gifData options:options]; 
                 } else {
                     UIImage *image = [UIImage imageWithContentsOfFile:mediaURL.path];
                     if (image) {
@@ -136,7 +145,7 @@ void downloadMedia(NSURL *url, MediaType mediaType, void (^completion)(void)) {
             if ([allocatedView respondsToSelector:@selector(init)]) {
                 loadingView = [allocatedView init];
                 if ([loadingView respondsToSelector:@selector(setTitle:)]) {
-                    [loadingView performSelector:@selector(setTitle:) withObject:@"解析中..."];
+                    [loadingView performSelector:@selector(setTitle:) withObject:@"正在解析..."];
                 }
             }
         }
@@ -624,6 +633,11 @@ void downloadAllImages(NSMutableArray *imageURLs) {
 %hook UIView
 
 - (void)setFrame:(CGRect)frame {
+
+    if ([self isKindOfClass:%c(AWEIMSkylightListView)] && [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisHiddenAvatarList"]) {
+        frame = CGRectZero;
+    }
+
     if (![[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableCommentBlur"] && ![[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableFullScreen"]) {
         %orig;
         return;
@@ -805,8 +819,21 @@ void downloadAllImages(NSMutableArray *imageURLs) {
 
 %hook AWEAwemeModel
 
+- (id)initWithDictionary:(id)arg1 error:(id *)arg2 {
+    id orig = %orig;
+    BOOL noAds = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYNoAds"];
+    return (noAds && self.isAds) ? nil : orig;
+}
+
+- (id)init {
+    id orig = %orig;
+    BOOL noAds = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYNoAds"];
+    return (noAds && self.isAds) ? nil : orig;
+}
+
 - (void)setIsAds:(BOOL)isAds {
-    %orig(NO);
+    BOOL noAds = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYNoAds"];
+    %orig(noAds ? NO : isAds); 
 }
 
 %end
@@ -829,13 +856,20 @@ void downloadAllImages(NSMutableArray *imageURLs) {
 %hook AWELeftSideBarEntranceView
 
 - (void)layoutSubviews {
-    %orig;
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisHiddenSidebarDot"]) {
-        for (UIView *subview in [self subviews]) {
-            if ([subview isKindOfClass:NSClassFromString(@"DUXBadge")]) {
-                subview.hidden = YES;
-            }
+    
+    __block BOOL isInTargetController = NO;
+    UIResponder *currentResponder = self;
+    
+    while ((currentResponder = [currentResponder nextResponder])) {
+        if ([currentResponder isKindOfClass:NSClassFromString(@"AWEUserHomeViewControllerV2")]) {
+            isInTargetController = YES;
+            break;
         }
+    }
+    
+    // 动态设置透明度（非目标控制器时隐藏）
+    if (!isInTargetController&&[[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisHiddenLeftSideBar"]) {
+        self.alpha = 0;
     }
 }
 
@@ -1391,23 +1425,51 @@ void downloadAllImages(NSMutableArray *imageURLs) {
 
 %end
 
-%hook AWEHPTopTabItemModel
+%hook AWEFeedChannelManager
 
-- (void)setChannelID:(NSString *)channelID {
+- (void)reloadChannelWithChannelModels:(id)arg1 currentChannelIDList:(id)arg2 reloadType:(id)arg3 selectedChannelID:(id)arg4 {
+    NSArray *channelModels = arg1;
+    NSMutableArray *newChannelModels = [NSMutableArray array];
+    NSArray *currentChannelIDList = arg2;
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-
-    if (([channelID isEqualToString:@"homepage_hot_container"] && [defaults boolForKey:@"DYYYHideHotContainer"]) ||
-        ([channelID isEqualToString:@"homepage_follow"] && [defaults boolForKey:@"DYYYHideFollow"]) ||
-        ([channelID isEqualToString:@"homepage_mediumvideo"] && [defaults boolForKey:@"DYYYHideMediumVideo"]) ||
-        ([channelID isEqualToString:@"homepage_mall"] && [defaults boolForKey:@"DYYYHideMall"]) ||
-        ([channelID isEqualToString:@"homepage_nearby"] && [defaults boolForKey:@"DYYYHideNearby"]) ||
-        ([channelID isEqualToString:@"homepage_groupon"] && [defaults boolForKey:@"DYYYHideGroupon"]) ||
-        ([channelID isEqualToString:@"homepage_tablive"] && [defaults boolForKey:@"DYYYHideTabLive"]) ||
-        ([channelID isEqualToString:@"homepage_pad_hot"] && [defaults boolForKey:@"DYYYHidePadHot"]) ||
-        ([channelID isEqualToString:@"homepage_hangout"] && [defaults boolForKey:@"DYYYHideHangout"])) {
-        return;
+    
+    NSMutableArray *newCurrentChannelIDList = [NSMutableArray arrayWithArray:currentChannelIDList];
+    
+    for (AWEHPTopTabItemModel *tabItemModel in channelModels) {
+        NSString *channelID = tabItemModel.channelID;
+        
+        if ([channelID isEqualToString:@"homepage_hot_container"]) {
+            [newChannelModels addObject:tabItemModel];
+            continue;
+        }
+        
+        BOOL isHideChannel = NO;
+        if ([channelID isEqualToString:@"homepage_follow"]) {
+            isHideChannel = [defaults boolForKey:@"DYYYHideFollow"];
+        } else if ([channelID isEqualToString:@"homepage_mediumvideo"]) {
+            isHideChannel = [defaults boolForKey:@"DYYYHideMediumVideo"];
+        } else if ([channelID isEqualToString:@"homepage_mall"]) {
+            isHideChannel = [defaults boolForKey:@"DYYYHideMall"];
+        } else if ([channelID isEqualToString:@"homepage_nearby"]) {
+            isHideChannel = [defaults boolForKey:@"DYYYHideNearby"];
+        } else if ([channelID isEqualToString:@"homepage_groupon"]) {
+            isHideChannel = [defaults boolForKey:@"DYYYHideGroupon"];
+        } else if ([channelID isEqualToString:@"homepage_tablive"]) {
+            isHideChannel = [defaults boolForKey:@"DYYYHideTabLive"];
+        } else if ([channelID isEqualToString:@"homepage_pad_hot"]) {
+            isHideChannel = [defaults boolForKey:@"DYYYHidePadHot"];
+        } else if ([channelID isEqualToString:@"homepage_hangout"]) {
+            isHideChannel = [defaults boolForKey:@"DYYYHideHangout"];
+        }
+        
+        if (!isHideChannel) {
+            [newChannelModels addObject:tabItemModel];
+        } else {
+            [newCurrentChannelIDList removeObject:channelID];
+        }
     }
-    %orig;
+    
+    %orig(newChannelModels, newCurrentChannelIDList, arg3, arg4);
 }
 
 %end
@@ -1485,45 +1547,6 @@ void downloadAllImages(NSMutableArray *imageURLs) {
         %orig(alpha);
    }else {
        %orig;
-    }
-}
-
-%end
-
-%hook AWEUserWorkCollectionViewComponentCell
-
-- (void)layoutSubviews {
-    %orig;
-
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideMyPage"]) {
-        [self removeFromSuperview];
-        return;
-    }
-}
-
-%end
-
-%hook AWEFeedRefreshFooter
-
-- (void)layoutSubviews {
-    %orig;
-
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideMyPage"]) {
-        [self removeFromSuperview];
-        return;
-    }
-}
-
-%end
-
-%hook AWERLSegmentView
-
-- (void)layoutSubviews {
-    %orig;
-
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideMyPage"]) {
-        [self removeFromSuperview];
-        return;
     }
 }
 
@@ -2029,8 +2052,12 @@ static CGFloat currentScale = 1.0;
         @"icon_home_favorite": @"favorite.png",
         @"iconHomeShareRight": @"share.png"
     };
-    
+
     NSString *customFileName = nil;
+    if ([nameString containsString:@"_comment"]) {
+        customFileName = @"comment.png";
+    }
+
     for (NSString *prefix in iconMapping.allKeys) {
         if ([nameString hasPrefix:prefix]) {
             customFileName = iconMapping[prefix];
@@ -2154,6 +2181,38 @@ static BOOL isDownloadFlied = NO;
     }
     %orig;
 }
+%end
+%hook AWEConcernSkylightCapsuleView
+- (void)setHidden:(BOOL)hidden {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHidenCapsuleView"]) {
+        hidden = YES;
+    }
+
+    %orig(hidden);
+}
+%end
+
+// 去广告功能
+%hook AwemeAdManager
+- (void)showAd {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYNoAds"]) return;
+    %orig;
+}
+%end
+
+//隐藏顶栏关注下的提示线
+%hook AWEFeedMultiTabSelectedContainerView
+
+- (void)setHidden:(BOOL)hidden {
+    BOOL forceHide = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHidentopbarprompt"];
+    
+    if (forceHide) {
+        %orig(YES); 
+    } else {
+        %orig(hidden); 
+    }
+}
+
 %end
 
 %ctor {
