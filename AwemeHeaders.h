@@ -42,6 +42,7 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, strong) NSString *ipAttribution;
 @property (nonatomic, strong) id currentAweme;
 @property (nonatomic, copy) NSString *descriptionString;
+@property (nonatomic, assign) BOOL isAds;
 @property (nonatomic, assign) BOOL isLive;
 - (BOOL)isLive;
 @end
@@ -306,11 +307,22 @@ void downloadAllImages(NSMutableArray *imageURLs);
 - (AWECommentLongPressPanelContext *)commentPageContext;
 @end
 
-
-
-
 @interface AWEFeedProgressSlider : UIView
 @property (nonatomic, strong) UIView *leftLabelUI;
 @property (nonatomic, strong) UIView *rightLabelUI;
 @property (nonatomic) AWEPlayInteractionProgressController * progressSliderDelegate;
+@end
+
+@interface AWEFeedChannelObject : NSObject
+@property (nonatomic, copy) NSString *channelID;
+@property (nonatomic, copy) NSString *channelTitle;
+@end
+
+@interface AWEFeedChannelManager : NSObject
+- (AWEFeedChannelObject *)getChannelWithChannelID:(NSString *)channelID;
+@end
+
+@interface AWEHPTopTabItemModel : NSObject
+@property (nonatomic, copy) NSString *channelID;
+@property (nonatomic, copy) NSString *channelTitle;
 @end
