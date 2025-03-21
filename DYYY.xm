@@ -1,8 +1,5 @@
-
-@interface AWEImageAlbumImageModel : NSObject
-@property (nonatomic, strong) id clipVideo;
-@end
-
+#import <Foundation/Foundation.h>
+#import "AwemeHeaders.h"
 
 //
 //  DYYY
@@ -1524,7 +1521,7 @@
                 //如果是实况的话
                 if (currimge.clipVideo != nil) {
                     NSURL *url = [NSURL URLWithString:currentImageModel.urlList.firstObject];
-                    NSURL *videoURL = [currimge.clipVideo.playURL getDYYYSrcURLDownload];
+                    NSURL *videoURL = [((AWEVideoModel *)currimge.clipVideo).playURL getDYYYSrcURLDownload];
                     
                     [DYYYManager downloadLivePhoto:url videoURL:videoURL completion:^{
                         [DYYYManager showToast:@"实况照片已保存到相册"];
@@ -1588,7 +1585,7 @@
                         for (AWEImageAlbumImageModel *imageModel in awemeModel.albumImages) {
                             if (imageModel.urlList.count > 0 && imageModel.clipVideo != nil) {
                                 NSURL *photoURL = [NSURL URLWithString:imageModel.urlList.firstObject];
-                                NSURL *videoURL = [imageModel.clipVideo.playURL getDYYYSrcURLDownload];
+                                NSURL *videoURL = [((AWEVideoModel *)imageModel.clipVideo).playURL getDYYYSrcURLDownload];
                                 
                                 [livePhotos addObject:@{
                                     @"imageURL": photoURL.absoluteString,
@@ -1772,7 +1769,7 @@
                 //如果是实况的话
                 if (currimge.clipVideo != nil) {
                     NSURL *url = [NSURL URLWithString:currentImageModel.urlList.firstObject];
-                    NSURL *videoURL = [currimge.clipVideo.playURL getDYYYSrcURLDownload];
+                    NSURL *videoURL = [((AWEVideoModel *)currimge.clipVideo).playURL getDYYYSrcURLDownload];
                     
                     [DYYYManager downloadLivePhoto:url videoURL:videoURL completion:^{
                         [DYYYManager showToast:@"实况照片已保存到相册"];
@@ -1836,7 +1833,7 @@
                         for (AWEImageAlbumImageModel *imageModel in awemeModel.albumImages) {
                             if (imageModel.urlList.count > 0 && imageModel.clipVideo != nil) {
                                 NSURL *photoURL = [NSURL URLWithString:imageModel.urlList.firstObject];
-                                NSURL *videoURL = [imageModel.clipVideo.playURL getDYYYSrcURLDownload];
+                                NSURL *videoURL = [((AWEVideoModel *)imageModel.clipVideo).playURL getDYYYSrcURLDownload];
                                 
                                 [livePhotos addObject:@{
                                     @"imageURL": photoURL.absoluteString,
