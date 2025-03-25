@@ -231,6 +231,9 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @interface AWEAwemeMusicInfoView : UIView
 @end
 
+@interface AFDRecommendToFriendEntranceLabel : UILabel
+@end
+
 @interface AWEStoryContainerCollectionView : UIView
 @end
 
@@ -246,30 +249,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 
 @interface AWEModernLongPressPanelTableViewController : UIViewController
 @property (nonatomic, strong) AWEAwemeModel *awemeModel;
-@end
-
-@interface AWESettingSectionModel : NSObject
-@property (nonatomic, copy) NSString *sectionHeaderTitle;
-@property (nonatomic, assign) CGFloat sectionHeaderHeight;
-@property (nonatomic, assign) NSInteger type;
-@property (nonatomic, strong) NSArray *itemArray;
-@end
-
-@interface AWESettingItemModel : NSObject
-@property (nonatomic, copy) NSString *identifier;
-@property (nonatomic, copy) NSString *title;
-@property (nonatomic, copy) NSString *detail;
-@property (nonatomic, assign) NSInteger type;
-@property (nonatomic, copy) NSString *iconImageName;
-@property (nonatomic, assign) NSInteger cellType;
-@property (nonatomic, assign) NSInteger colorStyle;
-@property (nonatomic, assign) BOOL isEnable;
-@property (nonatomic, copy) void (^cellTappedBlock)(void);
-@end
-
-@interface AWESettingsViewModel : NSObject
-@property (nonatomic, weak) UIViewController *controllerDelegate;
-@property (nonatomic, copy) NSString *traceEnterFrom;
 @end
 
 @interface DYYYSettingViewController : UIViewController
@@ -309,8 +288,6 @@ typedef NS_ENUM(NSInteger, MediaType) {
 - (AWEURLModel *)staticURLModel;
 @end
 
-
-
 @interface _TtC33AWECommentLongPressPanelSwiftImpl37CommentLongPressPanelSaveImageElement : NSObject
 - (AWECommentLongPressPanelContext *)commentPageContext;
 @end
@@ -337,4 +314,69 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @interface AWEHPTopTabItemModel : NSObject
 @property (nonatomic, copy) NSString *channelID;
 @property (nonatomic, copy) NSString *channelTitle;
+@end
+
+@interface AWEPlayInteractionStrongifyShareContentView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEAntiAddictedNoticeBarView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEFeedAnchorContainerView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEIMMessageTabOptPushBannerView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEFeedStickerContainerView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEECommerceEntryView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWETemplateTagsCommonView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AFDSkylightCellBubble : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface LOTAnimationView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWENearbySkyLightCapsuleView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEPlayInteractionCoCreatorNewInfoView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AFDCancelMuteAwemeView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEPlayDanmakuInputContainView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
 @end

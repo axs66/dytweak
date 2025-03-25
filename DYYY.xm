@@ -11,6 +11,9 @@
 #import "AwemeHeaders.h"
 #import "DYYYManager.h"
 
+#define DYYY @"DYYY"
+#define tweakVersion @"2.1-7"
+
 %hook AWEAwemePlayVideoViewController
 
 - (void)setIsAutoPlay:(BOOL)arg0 {
@@ -232,59 +235,6 @@
 }
 %end
 
-%hook AWESettingsViewModel
-
-- (NSArray *)sectionDataArray {
-    NSArray *originalSections = %orig;
-    
-    BOOL sectionExists = NO;
-    for (AWESettingSectionModel *section in originalSections) {
-        if ([section.sectionHeaderTitle isEqualToString:@"DYYY"]) {
-            sectionExists = YES;
-            break;
-        }
-    }
-    
-    if (self.traceEnterFrom && !sectionExists) {
-        AWESettingItemModel *dyyyItem = [[%c(AWESettingItemModel) alloc] init];
-        dyyyItem.identifier = @"DYYY";
-        dyyyItem.title = @"DYYY";
-        dyyyItem.detail = @"v2.1-7";
-        dyyyItem.type = 0;
-        dyyyItem.iconImageName = @"noticesettting_like";
-        dyyyItem.cellType = 26;
-        dyyyItem.colorStyle = 2;
-        dyyyItem.isEnable = YES;
-        
-        dyyyItem.cellTappedBlock = ^{
-            UIViewController *rootViewController = self.controllerDelegate;
-            DYYYSettingViewController *settingVC = [[DYYYSettingViewController alloc] init];
-            if (rootViewController.navigationController) {
-                [rootViewController.navigationController pushViewController:settingVC animated:YES];
-            } else {
-                UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:settingVC];
-                [rootViewController presentViewController:navController animated:YES completion:nil];
-            }
-
-        };
-        
-        AWESettingSectionModel *dyyySection = [[%c(AWESettingSectionModel) alloc] init];
-        dyyySection.sectionHeaderTitle = @"DYYY";
-        dyyySection.sectionHeaderHeight = 40;
-        dyyySection.type = 0;
-        dyyySection.itemArray = @[dyyyItem];
-        
-        NSMutableArray<AWESettingSectionModel *> *newSections = [NSMutableArray arrayWithArray:originalSections];
-        [newSections insertObject:dyyySection atIndex:0];
-        
-        return newSections;
-    }
-    
-    return originalSections;
-}
-
-%end
-
 
 %end
 
@@ -363,18 +313,59 @@
         self.view.frame = frame;
     }
 }
-//MARK: 双击视频打开评论区视频的双击事件
-- (void)onPlayer:(id)arg0 didDoubleClick:(id)arg1{
-    //如果打开双击评论功能
-    if([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableDoubleOpenComment"]){
-        //调用原生的
-         [self performCommentAction];
-        return;
+
+// MARK: 双击视频事件
+- (void)onPlayer:(id)arg0 didDoubleClick:(id)arg1 {
+
+    BOOL isPopupEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableDoubleOpenAlertController"];
+    BOOL isDirectCommentEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableDoubleOpenComment"];
+
+    if (isPopupEnabled) {
+        // 显示弹窗
+        UIAlertController *alertController = [UIAlertController
+            alertControllerWithTitle:NSLocalizedString(@"选择操作", nil)
+            message:@""
+            preferredStyle:UIAlertControllerStyleActionSheet];
+
+        [alertController addAction:[UIAlertAction
+            actionWithTitle:NSLocalizedString(@"打开评论区", nil)
+            style:UIAlertActionStyleDefault
+            handler:^(UIAlertAction *action) {
+                [self performCommentAction]; // 调用打开评论区的逻辑
+            }]];
+
+        [alertController addAction:[UIAlertAction
+            actionWithTitle:NSLocalizedString(@"点赞视频", nil)
+            style:UIAlertActionStyleDefault
+            handler:^(UIAlertAction *action) {
+                %orig; // 调用原始的点赞逻辑
+            }]];
+
+        [alertController addAction:[UIAlertAction
+            actionWithTitle:NSLocalizedString(@"取消", nil)
+            style:UIAlertActionStyleCancel
+            handler:nil]];
+
+        UIViewController *topController = [DYYYManager getActiveTopController];
+        if (topController) {
+            // 适配 iPad
+            if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+                alertController.popoverPresentationController.sourceView = topController.view;
+                alertController.popoverPresentationController.sourceRect = CGRectMake(topController.view.bounds.size.width / 2, topController.view.bounds.size.height / 2, 1, 1);
+            }
+            [topController presentViewController:alertController animated:YES completion:nil];
+        }
+
+        return; // 阻止原始的双击逻辑
+    } else if (isDirectCommentEnabled) {
+        [self performCommentAction];
+        return; 
     }
+
     %orig;
 }
-%end
 
+%end
 
 %hook AWEStoryContainerCollectionView
 - (void)layoutSubviews {
@@ -480,16 +471,16 @@
 
 %new
 - (void)applyBlurEffectIfNeeded {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableCommentBlur"] && 
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableCommentBlur"] &&
         [self isKindOfClass:NSClassFromString(@"AWECommentPanelContainerSwiftImpl.CommentContainerInnerViewController")]) {
-        
+
         self.view.backgroundColor = [UIColor clearColor];
         for (UIView *subview in self.view.subviews) {
             if (![subview isKindOfClass:[UIVisualEffectView class]]) {
                 subview.backgroundColor = [UIColor clearColor];
             }
         }
-        
+
         UIVisualEffectView *existingBlurView = nil;
         for (UIView *subview in self.view.subviews) {
             if ([subview isKindOfClass:[UIVisualEffectView class]] && subview.tag == 999) {
@@ -497,55 +488,62 @@
                 break;
             }
         }
-        
+
         BOOL isDarkMode = YES;
-        
+
         UILabel *commentLabel = [self findCommentLabel:self.view];
         if (commentLabel) {
             UIColor *textColor = commentLabel.textColor;
             CGFloat red, green, blue, alpha;
             [textColor getRed:&red green:&green blue:&blue alpha:&alpha];
-            
+
             if (red > 0.7 && green > 0.7 && blue > 0.7) {
                 isDarkMode = YES;
             } else if (red < 0.3 && green < 0.3 && blue < 0.3) {
                 isDarkMode = NO;
             }
         }
-        
+
         UIBlurEffectStyle blurStyle = isDarkMode ? UIBlurEffectStyleDark : UIBlurEffectStyleLight;
-        
+
+        // 动态获取用户设置的透明度
+        float userTransparency = [[[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYCommentBlurTransparent"] floatValue];
+        if (userTransparency <= 0 || userTransparency > 1) {
+            userTransparency = 0.5; // 默认值0.5（半透明）
+        }
+
         if (!existingBlurView) {
             UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:blurStyle];
             UIVisualEffectView *blurEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
             blurEffectView.frame = self.view.bounds;
             blurEffectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-            blurEffectView.alpha = 0.98;
+            blurEffectView.alpha = userTransparency; // 设置为用户自定义透明度
             blurEffectView.tag = 999;
-            
+
             UIView *overlayView = [[UIView alloc] initWithFrame:self.view.bounds];
-            CGFloat alpha = isDarkMode ? 0.3 : 0.1;
+            CGFloat alpha = isDarkMode ? 0.2 : 0.1;
             overlayView.backgroundColor = [UIColor colorWithWhite:(isDarkMode ? 0 : 1) alpha:alpha];
             overlayView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             [blurEffectView.contentView addSubview:overlayView];
-            
+
             [self.view insertSubview:blurEffectView atIndex:0];
         } else {
             UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:blurStyle];
             [existingBlurView setEffect:blurEffect];
-            
+
+            existingBlurView.alpha = userTransparency; // 动态更新已有视图的透明度
+
             for (UIView *subview in existingBlurView.contentView.subviews) {
                 if (subview.tag != 999) {
-                    CGFloat alpha = isDarkMode ? 0.3 : 0.1;
+                    CGFloat alpha = isDarkMode ? 0.2 : 0.1;
                     subview.backgroundColor = [UIColor colorWithWhite:(isDarkMode ? 0 : 1) alpha:alpha];
                 }
             }
-            
+
             [self.view insertSubview:existingBlurView atIndex:0];
         }
     }
 }
-
 %new
 - (UILabel *)findCommentLabel:(UIView *)view {
     if ([view isKindOfClass:[UILabel class]]) {
@@ -554,17 +552,18 @@
             return label;
         }
     }
-    
+
     for (UIView *subview in view.subviews) {
         UILabel *result = [self findCommentLabel:subview];
         if (result) {
             return result;
         }
     }
-    
+
     return nil;
 }
 %end
+//评论区微透
 
 %hook AFDFastSpeedView
 - (void)layoutSubviews {
@@ -628,6 +627,213 @@
 - (void)setIsAds:(BOOL)isAds {
     BOOL noAds = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYNoAds"];
     %orig(noAds ? isAds : NO); 
+}
+
+%end
+
+// 拦截开屏广告
+%hook BDASplashControllerView
++ (id)alloc {
+    BOOL noAds = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYNoAds"];
+    if (noAds) {
+        return nil;
+    }
+    return %orig; 
+}
+%end
+
+//隐藏头像加号
+%hook LOTAnimationView
+- (void)layoutSubviews {
+    %orig;
+
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideLOTAnimationView"]) {
+        [self removeFromSuperview];
+        return;
+    }
+}
+%end
+
+//移除同城吃喝玩乐提示框
+%hook AWENearbySkyLightCapsuleView
+- (void)layoutSubviews {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCapsuleView"]) {
+        if ([self respondsToSelector:@selector(removeFromSuperview)]) {
+            [self removeFromSuperview];
+        }
+        self.hidden = YES;
+        return; 
+    }
+    %orig;
+}
+%end
+
+//移除共创头像列表
+%hook AWEPlayInteractionCoCreatorNewInfoView
+- (void)layoutSubviews {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideGongChuang"]) {
+        if ([self respondsToSelector:@selector(removeFromSuperview)]) {
+            [self removeFromSuperview]; 
+        }
+        self.hidden = YES; 
+        return; 
+    }
+    %orig; 
+}
+%end
+
+//隐藏右下音乐和取消静音按钮
+%hook AFDCancelMuteAwemeView
+- (void)layoutSubviews {
+    %orig;
+
+    UIView *superview = self.superview;
+
+    if ([superview isKindOfClass:NSClassFromString(@"AWEBaseElementView")]) {
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideCancelMute"]) {
+            self.hidden = YES;
+        }
+    }
+}
+%end
+
+//隐藏弹幕按钮
+%hook AWEPlayDanmakuInputContainView
+
+- (void)layoutSubviews {
+    %orig;
+
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideDanmuButton"]) {
+        self.hidden = YES;
+    }
+}
+
+%end
+
+//隐藏作者店铺
+%hook AWEECommerceEntryView
+
+- (void)layoutSubviews {
+    %orig;
+
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideHisShop"]) {
+        UIView *parentView = self.superview;
+        if (parentView) {
+            parentView.hidden = YES;
+        } else {
+            self.hidden = YES;
+        }
+    }
+}
+
+%end
+
+//隐藏校园提示
+%hook AWETemplateTagsCommonView
+
+- (void)layoutSubviews {
+    %orig;
+
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTemplateTags"]) {
+        UIView *parentView = self.superview;
+        if (parentView) {
+            parentView.hidden = YES;
+        } else {
+            self.hidden = YES;
+        }
+    }
+}
+
+%end
+
+//隐藏挑战贴纸
+%hook AWEFeedStickerContainerView
+
+- (BOOL)isHidden {
+    BOOL origHidden = %orig; 
+    BOOL hideRecommend = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideChallengeStickers"];
+    return origHidden || hideRecommend;
+}
+
+- (void)setHidden:(BOOL)hidden {
+    BOOL forceHide = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideChallengeStickers"];
+    %orig(forceHide ? YES : hidden); 
+}
+
+%end
+
+//隐藏消息页顶栏头像气泡
+%hook AFDSkylightCellBubble
+ - (void)layoutSubviews {
+     %orig;
+ 
+     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisHiddenAvatarBubble"]) {
+         [self removeFromSuperview];
+         return;
+     }
+ }
+%end
+
+//隐藏消息页开启通知提示
+%hook AWEIMMessageTabOptPushBannerView
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHidePushBanner"]) {
+        return %orig(CGRectMake(frame.origin.x, frame.origin.y, 0, 0));
+    }
+    return %orig;
+}
+
+%end
+
+//隐藏拍同款
+%hook AWEFeedAnchorContainerView
+
+- (BOOL)isHidden {
+    BOOL origHidden = %orig; 
+    BOOL hideSamestyle = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideFeedAnchorContainer"];
+    return origHidden || hideSamestyle;
+}
+
+- (void)setHidden:(BOOL)hidden {
+    BOOL forceHide = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideFeedAnchorContainer"];
+    %orig(forceHide ? YES : hidden); 
+}
+
+%end
+
+//隐藏作者声明
+%hook AWEAntiAddictedNoticeBarView
+
+- (void)layoutSubviews {
+    %orig;
+
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideAntiAddictedNotice"]) {
+        UIView *parentView = self.superview;
+        if (parentView) {
+            parentView.hidden = YES;
+        } else {
+            self.hidden = YES;
+        }
+    }
+}
+
+%end
+
+//隐藏分享给朋友提示
+%hook AWEPlayInteractionStrongifyShareContentView
+
+- (void)layoutSubviews {
+    %orig;
+
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideShareContentView"]) {
+        UIView *parentView = self.superview;
+        if (parentView) {
+            parentView.hidden = YES;
+        } else {
+            self.hidden = YES;
+        }
+    }
 }
 
 %end
@@ -1063,57 +1269,83 @@
 //开启视频进度条后默认显示进度条的透明度否则有部分视频不会显示进度条以及秒数
 - (void)setAlpha:(CGFloat)alpha {
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisShowScheduleDisplay"]) {
-        alpha = 1.0;
-        %orig(alpha);
-    }else {
+        // 如果启用了隐藏视频进度，进度条透明度为0
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideVideoProgress"]) {
+            %orig(0);
+        } else {
+            %orig(1.0);
+        }
+    } else {
         %orig;
     }
 }
-//MARK: 视频显示进度条以及视频进度秒数
-//新建一个左时间
-%property (nonatomic, strong) UIView *leftLabelUI;
-//新建一个右时间
-%property (nonatomic, strong) UIView *rightLabelUI;
 
+// 确保即使进度条隐藏也可以拖动
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+    // 如果隐藏视频进度但显示进度时长，扩大判断区域以便于用户交互
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideVideoProgress"] &&
+        [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisShowScheduleDisplay"]) {
+        CGRect expandedBounds = CGRectInset(self.bounds, -20, -20);
+        return CGRectContainsPoint(expandedBounds, point);
+    }
+    return %orig;
+}
+
+//MARK: 视频显示进度条以及视频进度秒数
 - (void)setLimitUpperActionArea:(BOOL)arg1 {
     %orig;
     //定义一下进度条默认算法
     NSString *duration = [self.progressSliderDelegate formatTimeFromSeconds:floor(self.progressSliderDelegate.model.videoDuration/1000)];
     //如果开启了显示时间进度
-    if([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisShowScheduleDisplay"]){
-        //左时间的视图不存在就创建 50 15 大小的视图文本
-        if (!self.leftLabelUI) {
-            self.leftLabelUI = [[UILabel alloc] init];
-            self.leftLabelUI.frame = CGRectMake(0, -12, 50, 15);
-            self.leftLabelUI.backgroundColor = [UIColor clearColor];
-            [(UILabel *)self.leftLabelUI setText:@"00:00"];
-            [(UILabel *)self.leftLabelUI setTextColor:[UIColor whiteColor]];
-            [(UILabel *)self.leftLabelUI setFont:[UIFont systemFontOfSize:8]];
-            [self addSubview:self.leftLabelUI];
-        }else{
-            [(UILabel *)self.leftLabelUI setText:@"00:00"];
-            [(UILabel *)self.leftLabelUI setTextColor:[UIColor whiteColor]];
-            [(UILabel *)self.leftLabelUI setFont:[UIFont systemFontOfSize:8]];
+    if([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisShowScheduleDisplay"]) {
+        UIView *parentView = self.superview;
+        if(!parentView) return;
+        
+        // 移除之前可能存在的标签
+        [[parentView viewWithTag:10001] removeFromSuperview];
+        [[parentView viewWithTag:10002] removeFromSuperview];
+        
+        // 计算标签在父视图中的位置
+        CGRect sliderFrame = [self convertRect:self.bounds toView:parentView];
+        
+        // 获取垂直偏移量配置值，默认为-12.5
+        CGFloat verticalOffset = -12.5;
+        NSString *offsetValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYTimelineVerticalPosition"];
+        if (offsetValue.length > 0) {
+            CGFloat configOffset = [offsetValue floatValue];
+            if (configOffset != 0) {
+                verticalOffset = configOffset;
+            }
         }
         
-        // 如果rightLabelUI为空,创建右侧视图
-        if (!self.rightLabelUI) {
-            self.rightLabelUI = [[UILabel alloc] init];
-            self.rightLabelUI.frame = CGRectMake(self.frame.size.width - 25, -12, 50, 15);
-            self.rightLabelUI.backgroundColor = [UIColor clearColor];
-            [(UILabel *)self.rightLabelUI setText:duration];
-            [(UILabel *)self.rightLabelUI setTextColor:[UIColor whiteColor]];
-            [(UILabel *)self.rightLabelUI setFont:[UIFont systemFontOfSize:8]];
-            [self addSubview:self.rightLabelUI];
-        }else{
-            [(UILabel *)self.rightLabelUI setText:duration];
-            [(UILabel *)self.rightLabelUI setTextColor:[UIColor whiteColor]];
-            [(UILabel *)self.rightLabelUI setFont:[UIFont systemFontOfSize:8]];
-        }
+        // 创建左侧时间标签
+        UILabel *leftLabel = [[UILabel alloc] init];
+        leftLabel.frame = CGRectMake(sliderFrame.origin.x, 
+                                     sliderFrame.origin.y + verticalOffset, 
+                                     50, 15);
+        leftLabel.backgroundColor = [UIColor clearColor];
+        [leftLabel setText:@"00:00"];
+        [leftLabel setTextColor:[UIColor whiteColor]];
+        [leftLabel setFont:[UIFont systemFontOfSize:8]];
+        leftLabel.tag = 10001;
+        [parentView addSubview:leftLabel];
+        
+        // 创建右侧时间标签
+        UILabel *rightLabel = [[UILabel alloc] init];
+        rightLabel.frame = CGRectMake(sliderFrame.origin.x + sliderFrame.size.width - 25, 
+                                      sliderFrame.origin.y + verticalOffset, 
+                                      50, 15);
+        rightLabel.backgroundColor = [UIColor clearColor];
+        [rightLabel setText:duration];
+        [rightLabel setTextColor:[UIColor whiteColor]];
+        [rightLabel setFont:[UIFont systemFontOfSize:8]];
+        rightLabel.tag = 10002;
+        [parentView addSubview:rightLabel];
     }
 }
 
 %end
+
 //MARK: 视频显示-算法
 %hook AWEPlayInteractionProgressController
 %new
@@ -1125,16 +1357,25 @@
     NSInteger minutes = ((NSInteger)seconds % 3600) / 60;
     //秒数
     NSInteger secs = (NSInteger)seconds % 60;
+    
     //定义进度条实例
     AWEFeedProgressSlider *progressSlider = self.progressSlider;
+    UIView *parentView = progressSlider.superview;
+    UILabel *rightLabel = [parentView viewWithTag:10002];
+    
     //如果视频超过 60 分钟
     if (hours > 0) {
         //主线程设置他的显示总时间进度条位置
-         dispatch_async(dispatch_get_main_queue(), ^{
-            //设置右边小时进度条的位置
-            progressSlider.rightLabelUI.frame = CGRectMake(progressSlider.frame.size.width - 46, -12, 50, 15);
-         });
-         //返回 00:00:00
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (rightLabel) {
+                CGRect sliderFrame = [progressSlider convertRect:progressSlider.bounds toView:parentView];
+                CGRect frame = rightLabel.frame;
+                frame.origin.x = sliderFrame.origin.x + sliderFrame.size.width - 46;
+                // 保持原来的垂直位置
+                rightLabel.frame = frame;
+            }
+        });
+        //返回 00:00:00
         return [NSString stringWithFormat:@"%02ld:%02ld:%02ld", (long)hours, (long)minutes, (long)secs];
     } else {
         //返回 00:00
@@ -1145,21 +1386,40 @@
 - (void)updateProgressSliderWithTime:(CGFloat)arg1 totalDuration:(CGFloat)arg2 {
     %orig;
     //如果开启了显示视频进度
-    if([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisShowScheduleDisplay"]){
+    if([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisShowScheduleDisplay"]) {
         //获取进度条实例
         AWEFeedProgressSlider *progressSlider = self.progressSlider;
+        UIView *parentView = progressSlider.superview;
+        
+        UILabel *leftLabel = [parentView viewWithTag:10001];
+        UILabel *rightLabel = [parentView viewWithTag:10002];
+        
         //如果检测到时间
-        if (arg1 > 0) {
+        if (arg1 > 0 && leftLabel) {
             //创建左边的文本进度并且算法格式化时间
-            [(UILabel *)progressSlider.leftLabelUI setText:[self formatTimeFromSeconds:arg1]];
+            [leftLabel setText:[self formatTimeFromSeconds:arg1]];
         }
         //如果检测到时间
-        if (arg2 > 0) {
+        if (arg2 > 0 && rightLabel) {
             //创建右边的文本进度条并且算法格式化时间
-            [(UILabel *)progressSlider.rightLabelUI setText:[self formatTimeFromSeconds:arg2]];
+            [rightLabel setText:[self formatTimeFromSeconds:arg2]];
         }
     }
 }
+
+// 增加检测是否隐藏视频进度条的处理
+- (void)setHidden:(BOOL)hidden {
+    %orig;
+    
+    BOOL hideVideoProgress = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideVideoProgress"];
+    BOOL showScheduleDisplay = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisShowScheduleDisplay"];
+    
+    // 如果需要隐藏视频进度但显示时长
+    if (hideVideoProgress && showScheduleDisplay && !hidden) {
+        self.alpha = 0;
+    }
+}
+
 %end
 
 %hook AWENormalModeTabBarTextView
@@ -1308,16 +1568,44 @@
             }
         }
     }
+    // 应用IP属地标签缩放
+    NSString *ipScaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
+    if (ipScaleValue.length > 0) {
+        CGFloat ipScale = [ipScaleValue floatValue];
+        if (ipScale > 0 && ipScale != 1.0) {
+            // 保存原始字体大小和位置
+            UIFont *originalFont = label.font;
+            CGRect originalFrame = label.frame;
+            label.layer.anchorPoint = CGPointMake(0, label.layer.anchorPoint.y);
+            label.layer.position = CGPointMake(originalFrame.origin.x, label.layer.position.y);
+            
+            // 添加IP属地左移系数支持
+            NSString *leftShiftFactorValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYIPLeftShiftFactor"];
+            CGFloat leftShiftFactor = 2.84; // 默认值
+            if (leftShiftFactorValue.length > 0) {
+                CGFloat customShiftFactor = [leftShiftFactorValue floatValue];
+                if (customShiftFactor > 0) {
+                    leftShiftFactor = customShiftFactor;
+                }
+            }
+            
+            CGFloat halfScreenWidth = [UIScreen mainScreen].bounds.size.width / leftShiftFactor;
+            CGAffineTransform scaleTransform = CGAffineTransformMakeScale(ipScale, ipScale);
+            CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(-halfScreenWidth, 0);
+            label.transform = CGAffineTransformConcat(scaleTransform, translationTransform);
+           
+            label.font = originalFont;
+        }
+    }
     NSString *labelColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYLabelColor"];
     if (labelColor.length > 0) {
         label.textColor = [DYYYManager colorWithHexString:labelColor];
     }
-
     return label;
 }
 
 +(BOOL)shouldActiveWithData:(id)arg1 context:(id)arg2{
-	return [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"];
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"];
 }
 
 %end
@@ -1941,21 +2229,156 @@ static CGFloat currentScale = 1.0;
             }
         }
     }
-    if ([self.accessibilityLabel isEqualToString:@"left"]) {
-        NSString *scaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYElementScale"];
-        if (scaleValue.length > 0) {
-            CGFloat scale = [scaleValue floatValue];
-            if (scale > 0 && scale != 1.0) {
-                CGFloat ty = 0;
-                for(UIView *view in self.subviews){
-                    ty += (view.frame.size.height - view.frame.size.height * scale)/2;
-                }
-                if(left_tx == 0){
-                    left_tx = (self.frame.size.width - self.frame.size.width * scale)/2 - self.frame.size.width * (1 -scale);
-                }
-                self.transform = CGAffineTransformMake(scale, 0, 0, scale, left_tx, ty);
-            }
+}
+
+%end
+
+@interface AWEPlayInteractionDescriptionScrollView : UIScrollView
+@end
+
+%hook AWEPlayInteractionDescriptionScrollView
+
+- (void)layoutSubviews {
+    %orig;
+    
+    self.transform = CGAffineTransformIdentity;
+
+    NSString *scaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
+    CGFloat scale = 1.0; 
+    
+    if (scaleValue.length > 0) {
+        CGFloat customScale = [scaleValue floatValue];
+        if (customScale > 0 && customScale != 1.0) {
+            scale = customScale;
         }
+    }
+    
+    // 添加文案垂直偏移支持
+    NSString *descriptionOffsetValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYDescriptionVerticalOffset"];
+    CGFloat verticalOffset = 0;
+    if (descriptionOffsetValue.length > 0) {
+        verticalOffset = [descriptionOffsetValue floatValue];
+    }
+    
+    UIView *parentView = self.superview;
+    UIView *grandParentView = nil;
+
+    if (parentView) {
+        grandParentView = parentView.superview;
+    }
+    
+    if (grandParentView) {
+        CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
+        grandParentView.transform = scaleTransform;
+
+        CGRect scaledFrame = grandParentView.frame;
+        CGFloat translationX = -scaledFrame.origin.x;
+
+        CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(translationX, verticalOffset);
+        CGAffineTransform combinedTransform = CGAffineTransformConcat(scaleTransform, translationTransform);
+
+        grandParentView.transform = combinedTransform;
+    }
+}
+
+%end
+
+// 对新版文案的缩放（33.0以上）
+@interface AWEPlayInteractionDescriptionLabel : UILabel
+@end
+
+%hook AWEPlayInteractionDescriptionLabel
+
+- (void)layoutSubviews {
+    %orig;
+    
+    self.transform = CGAffineTransformIdentity;
+
+    NSString *scaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
+    CGFloat scale = 1.0; 
+    
+    if (scaleValue.length > 0) {
+        CGFloat customScale = [scaleValue floatValue];
+        if (customScale > 0 && customScale != 1.0) {
+            scale = customScale;
+        }
+    }
+    
+    // 添加文案垂直偏移支持
+    NSString *descriptionOffsetValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYDescriptionVerticalOffset"];
+    CGFloat verticalOffset = 0;
+    if (descriptionOffsetValue.length > 0) {
+        verticalOffset = [descriptionOffsetValue floatValue];
+    }
+    
+    UIView *parentView = self.superview;
+    UIView *grandParentView = nil;
+
+    if (parentView) {
+        grandParentView = parentView.superview;
+    }
+    
+    if (grandParentView) {
+        CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
+        grandParentView.transform = scaleTransform;
+
+        CGRect scaledFrame = grandParentView.frame;
+        CGFloat translationX = -scaledFrame.origin.x;
+
+        CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(translationX, verticalOffset);
+        CGAffineTransform combinedTransform = CGAffineTransformConcat(scaleTransform, translationTransform);
+
+        grandParentView.transform = combinedTransform;
+    }
+}
+
+%end
+
+@interface AWEUserNameLabel : UIView
+@end
+
+%hook AWEUserNameLabel
+
+- (void)layoutSubviews {
+    %orig;
+    
+    self.transform = CGAffineTransformIdentity;
+
+    NSString *scaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
+    CGFloat scale = 1.0; 
+    
+    if (scaleValue.length > 0) {
+        CGFloat customScale = [scaleValue floatValue];
+        if (customScale > 0 && customScale != 1.0) {
+            scale = customScale;
+        }
+    }
+    
+    // 添加垂直偏移支持
+    NSString *verticalOffsetValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameVerticalOffset"];
+    CGFloat verticalOffset = 0;
+    if (verticalOffsetValue.length > 0) {
+        verticalOffset = [verticalOffsetValue floatValue];
+    }
+    
+    UIView *parentView = self.superview;
+    UIView *grandParentView = nil;
+
+    if (parentView) {
+        grandParentView = parentView.superview;
+    }
+    
+    if (grandParentView) {
+        CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
+        grandParentView.transform = scaleTransform;
+
+        CGRect scaledFrame = grandParentView.frame;
+        CGFloat translationX = -scaledFrame.origin.x;
+  
+        CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(translationX, verticalOffset);
+        CGAffineTransform combinedTransform = CGAffineTransformConcat(scaleTransform, translationTransform);
+        
+        grandParentView.transform = combinedTransform;
     }
 }
 
@@ -2188,6 +2611,21 @@ static BOOL isDownloadFlied = NO;
     
     return bestURL;
 }
+%end
+
+%hook AFDRecommendToFriendEntranceLabel
+- (void)layoutSubviews {
+    %orig;
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideRecommendTips"]) {
+        UIView *parentView = self.superview;
+        if (parentView) {
+            parentView.hidden = YES;
+        } else {
+            self.hidden = YES;
+        }
+    }
+}
+
 %end
 
 %ctor {
