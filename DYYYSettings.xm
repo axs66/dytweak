@@ -804,9 +804,9 @@ static AWESettingSectionModel* createSection(NSString* title, NSArray* items) {
     }
     if (self.traceEnterFrom && !sectionExists) {
         AWESettingItemModel *dyyyItem = [[%c(AWESettingItemModel) alloc] init];
-        dyyyItem.identifier = @"DYYY";
-        dyyyItem.title = @"DYYY";
-        dyyyItem.detail = @"v2.1-7";
+        dyyyItem.identifier = @"抖音净化";
+        dyyyItem.title = @"抖音净化";
+        dyyyItem.detail = @"v3.0.1";
         dyyyItem.type = 0;
         dyyyItem.svgIconImageName = @"ic_sapling_outlined";
         dyyyItem.cellType = 26;
