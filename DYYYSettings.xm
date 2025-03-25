@@ -1283,14 +1283,14 @@ static AWESettingSectionModel* createSection(NSString* title, NSArray* items) {
             AWESettingItemModel *aboutItem = [[%c(AWESettingItemModel) alloc] init];
             aboutItem.identifier = @"DYYYAbout";
             aboutItem.title = @"关于插件";
-            aboutItem.detail = @"v3.0";
+            aboutItem.detail = @"v3.0.1";
             aboutItem.type = 0;
             aboutItem.iconImageName = @"awe-settings-icon-about";
             aboutItem.cellType = 26;
             aboutItem.colorStyle = 0;
             aboutItem.isEnable = YES;
             aboutItem.cellTappedBlock = ^{
-                showAboutDialog(@"关于抖音净化", @"版本: v3.0\n\n感谢使用抖音净化\n\n@Axs 干死人妖嘉嘉\n\nTelegram@wxfx8", nil);
+                showAboutDialog(@"关于抖音净化", @"版本: v3.0.1\n\n感谢使用抖音净化\n\n@Axs 干死人妖嘉嘉\n\nTG交流频道@wxfx8", nil);
             };
             [aboutItems addObject:aboutItem];
             
