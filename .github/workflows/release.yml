@@ -37,7 +37,7 @@ jobs:
       - name: Create GitHub Release
         id: release
         run: |
-          VERSION=V3.0
+          VERSION=V3.0.1
           gh release create $VERSION ${{ github.workspace }}/packages/*.deb --title "抖音净化 $VERSION" --notes "Automated release of .deb files"
         env:
           GH_TOKEN: ${{ secrets.PAT }}  # 这里设置了 GitHub Token 用于授权
