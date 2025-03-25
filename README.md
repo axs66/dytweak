@@ -19,6 +19,6 @@ control 文件是 Debian 包的标准文件，定义了 .deb 包的元数据，�
 这个文件是 DYYYSettingViewController.h 中声明的接口的实现文件，包含了实际的业务逻辑。
 这里实现了视图控制器的生命周期方法（如 viewDidLoad, viewWillAppear）和用户交互方法（如按钮点击事件的处理）。
 
-6.DYYYSettings.xm：第1293行修改个人信息
+6.DYYYSettings.xm：第809行修改版本号，第1293行修改个人信息
 （设置描述文件）
 
