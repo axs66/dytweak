@@ -12,7 +12,7 @@
 #import "DYYYManager.h"
 
 #define DYYY @"DYYY"
-#define tweakVersion @"2.1-7"
+#define tweakVersion @"3.0.1"
 
 %hook AWEAwemePlayVideoViewController
 
