@@ -42,7 +42,26 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (retain, nonatomic) AWEVideoModel *clipVideo;
 @end
 
+@interface AWEAwemeStatisticsModel : NSObject
+@property (nonatomic, strong) NSNumber *diggCount;
+@end
+
+@interface AWESearchAwemeExtraModel : NSObject
+@end
+
+@interface AWEAwemeTextExtraModel : NSObject
+@property (nonatomic, copy) NSString *hashtagName;
+@property (nonatomic, copy) NSString *hashtagId;
+@property (nonatomic, copy) NSString *type;
+@property (nonatomic, assign) NSRange textRange;
+@property (nonatomic, copy) NSString *awemeId;
+@property (nonatomic, copy) NSString *userId;
+@property (nonatomic, copy) NSString *userUniqueId;
+@property (nonatomic, copy) NSString *secUid;
+@end
+
 @interface AWEAwemeModel : NSObject
+@property (nonatomic, strong, readwrite) NSNumber *createTime;
 @property (nonatomic, assign,readwrite) CGFloat videoDuration;
 @property (nonatomic, strong) AWEVideoModel *video;
 @property (nonatomic, strong) AWEMusicModel *music;
@@ -56,7 +75,17 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, assign) BOOL isAds;
 @property (nonatomic, assign) BOOL isLive;
 @property (nonatomic, strong) NSString *shareURL;
+@property (nonatomic, strong) id hotSpotLynxCardModel;
+@property (nonatomic, copy) NSString *liveReason;
+@property (nonatomic, strong) id shareRecExtra; // 推荐视频专有属性
+@property (nonatomic, strong) NSArray<AWEAwemeTextExtraModel *> *textExtras;
+@property (nonatomic, copy) NSString *itemTitle;
+@property (nonatomic, copy) NSString *descriptionSimpleString;
+@property (nonatomic, strong) NSString *itemID;
+
+@property (nonatomic, strong) AWEAwemeStatisticsModel *statistics;
 - (BOOL)isLive;
+- (AWESearchAwemeExtraModel *)searchExtraModel;
 @end
 
 @interface AWELongPressPanelBaseViewModel : NSObject
@@ -83,6 +112,9 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWENormalModeTabBarGeneralButton : UIButton
+@end
+
+@interface AWEHPTopTabItemBadgeContentView : UIView
 @end
 
 @interface AWEProgressLoadingView : UIView
@@ -115,6 +147,8 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @interface AWEPlayInteractionViewController : UIViewController
 @property (nonatomic, strong) UIView *view;
 - (void)performCommentAction;
+- (void)performLikeAction;
+- (void)onVideoPlayerViewDoubleClicked:(id)arg1;
 @end
 
 @interface UIView (Transparency)
@@ -199,6 +233,9 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @interface AWEFeedTableView : UIView
 @end
 
+@interface IESLiveFeedDrawerEntranceView : UIView
+@end
+
 @interface AWEPlayInteractionProgressContainerView : UIView
 @end
 
@@ -229,6 +266,9 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWEAwemeMusicInfoView : UIView
+@end
+
+@interface AWETemplatePlayletView : UIView
 @end
 
 @interface AFDRecommendToFriendEntranceLabel : UILabel
@@ -379,4 +419,205 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @interface AWEPlayDanmakuInputContainView : UIView
 @property (nonatomic, strong, readonly) UIView *superview;
 @property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEPlayInteractionRelatedVideoView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEFeedRelatedSearchTipView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+@interface AWEProfileMixCollectionViewCell : UIView
+@end
+
+@interface AWEProfileTaskCardStyleListCollectionViewCell : UIView
+@end
+
+// AWEVersionUpdateManager相关接口声明
+@interface AWEVersionUpdateManager : NSObject
+@property (nonatomic, strong) id networkModule;
+@property (nonatomic, strong) id badgeModule;
+@property (nonatomic, strong) id workflow;
+- (NSString *)currentVersion;
+- (void)startVersionUpdateWorkflow:(id)arg1 completion:(id)arg2;
+- (void)workflowDidFinish:(id)arg1;
++ (id)sharedInstance;
+@end
+
+@interface AWEVersionUpdateNetworkModule : NSObject
+@end
+
+@interface AWEVersionUpdateBadgeModule : NSObject
+@end
+
+@interface AWEVersionUpdateWorkflow : NSObject
+@end
+
+@interface AWEStoryProgressSlideView : UIView
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+@end
+
+//隐藏好友分享私信
+@interface AFDNewFastReplyView @property (nonatomic, weak) UIView *superview;
+@property (nonatomic) BOOL hidden;
+@end
+
+@interface AWENewLiveSkylightViewController : UIViewController
+- (void)showSkylight:(BOOL)arg0 animated:(BOOL)arg1 actionMethod:(unsigned long long)arg2;
+- (void)updateIsSkylightShowing:(BOOL)arg0;
+@end
+
+@interface AWENearbyFullScreenViewModel : NSObject
+- (void)setShowSkyLight:(id)arg1;
+- (void)setHaveSkyLight:(id)arg1;
+@end
+
+@interface AWECorrelationItemTag : UIView
+- (void)layoutSubviews;
+@end
+
+@interface AWEPlayInteractionTemplateButtonGroup : UIView
+- (void)layoutSubviews;
+@end
+
+
+@interface AWEHPDiscoverFeedEntranceView : UIView
+- (void)configImage:(UIImageView *)imageView Label:(UILabel *)label position:(NSInteger)pos;
+@end
+
+@interface AWEIMCellLiveStatusContainerView : UIView
+- (void)p_initUI;
+@end
+
+@interface AWELiveSkylightCatchView : UIView
+- (void)setupUI;
+@end
+
+@interface AWEIMFansGroupTopDynamicDomainTemplateView : UIView
+- (void)layoutSubviews;
+@end
+
+@interface AWETemplateCommonView : UIView
+- (void)layoutSubviews;
+@end
+
+@interface AWEUIAlertView : UIView
+- (void)show;
+@end
+
+@interface AWETeenModeAlertView : UIView
+- (BOOL)show;
+@end
+
+@interface AWETeenModeSimpleAlertView : UIView
+- (BOOL)show;
+@end
+
+@interface AWEVideoTypeTagView : UIView
+@end
+
+@interface AWELiveStatusIndicatorView : UIView
+@end
+
+@interface AWEIMInputActionBarInteractor : UIView
+- (void)p_setupUI;
+@end
+
+@interface AWELiveFeedStatusLabel : UILabel
+@end
+
+@interface BDXWebView : UIView
+@end
+
+@interface IESLiveActivityBannnerView : UIView
+@end
+@interface AWECommentSearchAnchorView : UIView
+- (void)setHidden:(BOOL)hidden;
+- (BOOL)isHidden;
+- (void)layoutSubviews;
+@end
+
+@interface AWEPOIEntryAnchorView : UIView
+- (void)setHidden:(BOOL)hidden;
+- (BOOL)isHidden;
+- (void)layoutSubviews;
+- (void)p_processModels:(id)models withPOIName:(id)poiName;
+@end
+
+@interface AWECommentGuideLunaAnchorView : UIView
+- (void)setHidden:(BOOL)hidden;
+- (BOOL)isHidden;
+- (void)layoutSubviews;
+@end
+
+@interface AWEFeedTopBarContainer : UIView
+- (void)applyDYYYTransparency; 
+@end
+
+@interface AWEHPTopBarCTAContainer : UIView
+- (void)applyDYYYTransparency;
+@end
+
+@interface ACCStickerContainerView : UIView
+@end
+
+@interface AWEUserActionSheetView : UIView
+- (instancetype)init;
+- (void)setActions:(NSArray *)actions;
+- (void)show;
+@end
+
+@interface AWEUserSheetAction : NSObject
++ (instancetype)actionWithTitle:(NSString *)title imgName:(NSString *)imgName handler:(id)handler;
++ (instancetype)actionWithTitle:(NSString *)title style:(NSUInteger)style imgName:(NSString *)imgName handler:(id)handler;
+@end
+
+@interface AWEFeedProgressSlider (CustomAdditions)
+- (void)applyCustomProgressStyle;
+@end
+
+@interface AWEPlayInteractionDescriptionScrollView : UIScrollView
+@end
+
+@interface AWEUserNameLabel : UIView
+@end
+
+@interface AWEPlayInteractionDescriptionLabel : UILabel
+@end
+//关注直播
+@interface AWEConcernSkylightCapsuleView : UIView
+@end
+//直播发现
+@interface AWEFeedLiveTabRevisitControlView : UIView
+@end
+//直播 退出清屏、投屏按钮
+@interface IESLiveButton : UIView
+@end
+//直播点歌
+@interface IESLiveKTVSongIndicatorView : UIView
+@end
+//图片滑条
+@interface AWEStoryProgressContainerView : UIView 
+@property (nonatomic, strong, readonly) UIView *superview;
+@property (nonatomic, assign, getter=isHidden) BOOL hidden;
+- (void)layoutSubviews; 
+- (void)updateIndicatorWithPageCount:(NSInteger)count; 
+@end
+
+@interface AWESearchAnchorListModel : NSObject
+- (id)init;
+@end
+
+@interface AWEPlayInteractionAvatarView : UIView
+@property(nonatomic, readonly) NSArray *subviews;
+@property(nonatomic, readonly) CGRect frame;
+@end
+
+//直播间流量提醒弹窗
+@interface AWELiveFlowAlertView : UIView
 @end
