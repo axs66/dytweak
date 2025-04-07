@@ -340,7 +340,7 @@ static void showIconOptionsDialog(NSString *title, UIImage *previewImage, NSStri
 }
 
 #undef 抖音净化
-#define 抖音净化 @"抖音净化"
+#define DYYY @"抖音净化"
 
 static void *kViewModelKey = &kViewModelKey;
 %hook AWESettingBaseViewController
