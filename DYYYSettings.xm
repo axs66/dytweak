@@ -339,8 +339,8 @@ static void showIconOptionsDialog(NSString *title, UIImage *previewImage, NSStri
     [optionsDialog show];
 }
 
-#undef DYYY
-#define DYYY @"抖音净化"
+#undef 抖音净化
+#define 抖音净化 @"抖音净化"
 
 static void *kViewModelKey = &kViewModelKey;
 %hook AWESettingBaseViewController
