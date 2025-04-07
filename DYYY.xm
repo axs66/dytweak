@@ -12,8 +12,8 @@
 #import "DYYYManager.h"
 #import "DYYYBottomAlertView.h"
 
-#define DYYY @"DYYY"
-#define tweakVersion @"2.2-2"
+#define DYYY @"抖音净化"
+#define tweakVersion @"3.0.2"
 
 @interface DYYYManager (API)
 + (void)parseAndDownloadVideoWithShareLink:(NSString *)shareLink apiKey:(NSString *)apiKey;
