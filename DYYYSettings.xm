@@ -1385,14 +1385,9 @@ static void showUserAgreementAlert() {
             aboutItem.colorStyle = 0;
             aboutItem.isEnable = YES;
             aboutItem.cellTappedBlock = ^{
-                showAboutDialog(@"关于抖音净化", 
-                    @"版本: v3.0.2\n\n"
-                    @"感谢使用抖音净化\n\n"
-                    @"@Axs 干死人妖嘉嘉\n\n"
-                    @"Telegram @wxfx8\n\n");
-            };
+            showAboutDialog(@"关于抖音净化", @"版本：V3.0.2\n@Axs 干死人妖嘉嘉\nTelegram @wxfx8\n\n", ^{});};
             [aboutItems addObject:aboutItem];
-            
+          
             AWESettingItemModel *licenseItem = [[%c(AWESettingItemModel) alloc] init];
             licenseItem.identifier = @"DYYYLicense";
             licenseItem.title = @"开源协议";
