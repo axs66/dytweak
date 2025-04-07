@@ -16,7 +16,7 @@ control 文件是 Debian 包的标准文件，定义了 .deb 包的元数据，�
 它可能包含视图控制器的属性（如 UI 元素）和方法（如处理按钮点击、设置数据等）。
 文件中会声明该视图控制器将如何与其他对象交互，以及提供哪些方法来操作视图或响应用户输入。
 
-5.DYYYSettingViewController.m（实现文件）：第192行修改插件版本号
+5.DYYYSettingViewController.m（实现文件）：第262行修改插件版本号，作者信息
 
 这个文件是 DYYYSettingViewController.h 中声明的接口的实现文件，包含了实际的业务逻辑。
 这里实现了视图控制器的生命周期方法（如 viewDidLoad, viewWillAppear）和用户交互方法（如按钮点击事件的处理）。
