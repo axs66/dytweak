@@ -1389,7 +1389,7 @@ static void showUserAgreementAlert() {
                     @"版本: v3.0.2\n\n"
                     @"感谢使用抖音净化\n\n"
                     @"@Axs 干死人妖嘉嘉\n\n"
-                    @"Telegram @wxfx8\n\n";
+                    @"Telegram @wxfx8\n\n");
             };
             [aboutItems addObject:aboutItem];
             
