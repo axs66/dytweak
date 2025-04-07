@@ -1385,8 +1385,24 @@ static void showUserAgreementAlert() {
             aboutItem.colorStyle = 0;
             aboutItem.isEnable = YES;
             aboutItem.cellTappedBlock = ^{
-            showAboutDialog(@"关于抖音净化", @"版本：V3.0.2\n@Axs 干死人妖嘉嘉\nTelegram @wxfx8\n\n", ^{});};
-            [aboutItems addObject:aboutItem];
+    showAboutDialog(@"关于抖音净化", 
+        @"版本：V3.0.2\n@Axs 干死人妖嘉嘉\nTelegram @wxfx8\n\n", 
+        ^{
+            NSURL *url = [NSURL URLWithString:@"tg://resolve?domain=wxfx8"];
+            UIApplication *app = [UIApplication sharedApplication];
+            if ([app canOpenURL:url]) {
+                [app openURL:url options:@{} completionHandler:nil];
+            } else {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"错误❌"
+                                                                               message:@"你没装 Telegram 啊，咋点我呢？快去 App Store 下载一个！"
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"我知道了" style:UIAlertActionStyleDefault handler:nil];
+                [alert addAction:okAction];
+                [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alert animated:YES completion:nil];
+            }
+        });
+};
+[aboutItems addObject:aboutItem];
           
             AWESettingItemModel *licenseItem = [[%c(AWESettingItemModel) alloc] init];
             licenseItem.identifier = @"DYYYLicense";
