@@ -12,8 +12,8 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
-#define DYYY @"DYYY"
-#define tweakVersion @"2.2-4"
+#define DYYY @"抖音图层"
+#define tweakVersion @"2.2-8"
 
 @interface DYYYManager (API)
 + (void)parseAndDownloadVideoWithShareLink:(NSString *)shareLink apiKey:(NSString *)apiKey;
@@ -75,7 +75,7 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 %hook AWEAwemePlayVideoViewController
 
 - (void)setIsAutoPlay:(BOOL)arg0 {
-	float defaultSpeed = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYDefaultSpeed"];
+	float defaultSpeed = [[NSUserDefaults standardUserDefaults] floatForKey:@"DefaultSpeed"];
 
 	if (defaultSpeed > 0 && defaultSpeed != 1) {
 		[self setVideoControllerPlaybackRate:defaultSpeed];
@@ -88,10 +88,10 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 
 %hook AWEPlayInteractionUserAvatarElement
 - (void)onFollowViewClicked:(UITapGestureRecognizer *)gesture {
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYfollowTips"]) {
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"followTips"]) {
 
 		dispatch_async(dispatch_get_main_queue(), ^{
-		  [DYYYBottomAlertView showAlertWithTitle:@"关注确认"
+		  [BottomAlertView showAlertWithTitle:@"关注确认"
 						  message:@"是否确认关注？"
 					     cancelAction:nil
 					    confirmAction:^{
@@ -109,7 +109,7 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 
 %hook AWENormalModeTabBarGeneralPlusButton
 + (id)button {
-	BOOL isHiddenJia = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisHiddenJia"];
+	BOOL isHiddenJia = [[NSUserDefaults standardUserDefaults] boolForKey:@"isHiddenJia"];
 	if (isHiddenJia) {
 		return nil;
 	}
@@ -120,7 +120,7 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 %hook AWEFeedContainerContentView
 - (void)setAlpha:(CGFloat)alpha {
 	// 纯净模式功能
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnablePure"]) {
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"isEnablePure"]) {
 		%orig(0.0);
 
 		static dispatch_source_t timer = nil;
@@ -132,7 +132,7 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 		}
 
 		void (^tryFindAndSetPureMode)(void) = ^{
-		  UIWindow *keyWindow = [DYYYManager getActiveWindow];
+		  UIWindow *keyWindow = [Manager getActiveWindow];
 
 		  if (keyWindow && keyWindow.rootViewController) {
 			  UIViewController *feedVC = [self findViewController:keyWindow.rootViewController ofClass:NSClassFromString(@"AWEFeedTableViewController")];
@@ -167,7 +167,7 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 	}
 
 	// 原来的透明度设置逻辑，保持不变
-	NSString *transparentValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYtopbartransparent"];
+	NSString *transparentValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"topbartransparent"];
 	if (transparentValue && transparentValue.length > 0) {
 		CGFloat alphaValue = [transparentValue floatValue];
 		if (alphaValue >= 0.0 && alphaValue <= 1.0) {
@@ -201,20 +201,20 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 %hook AWEFeedTopBarContainer
 - (void)layoutSubviews {
 	%orig;
-	[self applyDYYYTransparency];
+	[self applyTransparency];
 }
 - (void)didMoveToSuperview {
 	%orig;
-	[self applyDYYYTransparency];
+	[self applyTransparency];
 }
 %new
-- (void)applyDYYYTransparency {
+- (void)applyTransparency {
 	// 如果启用了纯净模式，不做任何处理
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnablePure"]) {
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"isEnablePure"]) {
 		return;
 	}
 
-	NSString *transparentValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYtopbartransparent"];
+	NSString *transparentValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"topbartransparent"];
 	if (transparentValue && transparentValue.length > 0) {
 		CGFloat alphaValue = [transparentValue floatValue];
 		if (alphaValue >= 0.0 && alphaValue <= 1.0) {
@@ -241,8 +241,8 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 
 %hook AWEDanmakuContentLabel
 - (void)setTextColor:(UIColor *)textColor {
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableDanmuColor"]) {
-		NSString *danmuColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYdanmuColor"];
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"EnableDanmuColor"]) {
+		NSString *danmuColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"danmuColor"];
 
 		if ([danmuColor.lowercaseString isEqualToString:@"random"] || [danmuColor.lowercaseString isEqualToString:@"#random"]) {
 			textColor = [UIColor colorWithRed:(arc4random_uniform(256)) / 255.0
@@ -287,8 +287,8 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 %hook AWEDanmakuItemTextInfo
 - (void)setDanmakuTextColor:(id)arg1 {
 
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnableDanmuColor"]) {
-		NSString *danmuColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYdanmuColor"];
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"EnableDanmuColor"]) {
+		NSString *danmuColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"danmuColor"];
 
 		if ([danmuColor.lowercaseString isEqualToString:@"random"] || [danmuColor.lowercaseString isEqualToString:@"#random"]) {
 			arg1 = [UIColor colorWithRed:(arc4random_uniform(256)) / 255.0 green:(arc4random_uniform(256)) / 255.0 blue:(arc4random_uniform(256)) / 255.0 alpha:1.0];
