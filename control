@@ -1,10 +1,13 @@
-Package: com.xx.dyhook
-Name: 抖音图层
-Version: 2.2.8
-Description: 自用 越狱食用。
+Package: com.axs.dytweak
+Name: 抖音净化
+Version: 3.0.3
+Description: 仅供学习交流，请在 24 小时内自觉删除。
+Homepage: https://github.com/axs66
 Section: Tweaks
 Depends: firmware (>= 5.0), mobilesubstrate
 Priority: optional
-Maintainer: x✨
-Author: x✨
+Maintainer: Axs
+Author: Axs
 Architecture: iphoneos-arm iphoneos-arm64 iphoneos-arm64e
+Icon: https://axs66.github.io/repo/icon/dy.png
+Sileodepiction: https://axs66.github.io/repo/sileodepiction/dytweak/js.json
