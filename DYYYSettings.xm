@@ -2448,9 +2448,9 @@ static void showUserAgreementAlert() {
 
 		  // 添加关于
 		  AWESettingItemModel *aboutItem = [[%c(AWESettingItemModel) alloc] init];
-		  aboutItem.identifier = @"DouYinHookAbout";
+		  aboutItem.identifier = @"DouYinAbout";
 		  aboutItem.title = @"关于插件";
-		  aboutItem.detail = @"v2.2-8";
+		  aboutItem.detail = @"v3.0.3";
 		  aboutItem.type = 0;
 		  aboutItem.iconImageName = @"awe-settings-icon-about";
 		  aboutItem.cellType = 26;
@@ -2460,7 +2460,8 @@ static void showUserAgreementAlert() {
 		    showAboutDialog(@"关于抖音净化",
 				    @"版本: v3.0.3\n\n"
 				    @"感谢使用抖音净化\n\n"
-				    @"Telegram @DouYinHook\n\n",
+				    @"@Axs干死人妖嘉嘉\n\n"
+				    @"Telegram @wxfx8\n\n",
 				    nil);
 		  };
 		  [aboutItems addObject:aboutItem];
