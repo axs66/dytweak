@@ -338,7 +338,7 @@ static void showIconOptionsDialog(NSString *title, UIImage *previewImage, NSStri
 }
 
 #undef DYYY
-#define DYYY @"DYYY设置"
+#define DYYY @"抖音图层"
 
 static void *kViewModelKey = &kViewModelKey;
 %hook AWESettingBaseViewController
@@ -422,9 +422,9 @@ static void showUserAgreementAlert() {
 	if (self.traceEnterFrom && !sectionExists) {
 
 		AWESettingItemModel *dyyyItem = [[%c(AWESettingItemModel) alloc] init];
-		dyyyItem.identifier = @"DYYY";
-		dyyyItem.title = @"DYYY";
-		dyyyItem.detail = @"v2.2-4";
+		dyyyItem.identifier = @"抖音图层";
+		dyyyItem.title = @"抖音图层";
+		dyyyItem.detail = @"v2.2-8";
 		dyyyItem.type = 0;
 		dyyyItem.svgIconImageName = @"ic_sapling_outlined";
 		dyyyItem.cellType = 26;
@@ -436,7 +436,7 @@ static void showUserAgreementAlert() {
 		  BOOL hasAgreed = getUserDefaults(@"DYYYUserAgreementAccepted");
 		  if (!hasAgreed) {
 			  showAboutDialog(@"用户协议",
-					  @"本插件为开源项目\n仅供学习交流用途\n如有侵权请联系, GitHub 仓库：huami1314/DYYY\n请遵守当地法律法规, "
+					  @"本插件为开源项目\n仅供学习交流用途\n如有侵权请联系, Telegram：https://tme/DouYinHook \n请遵守当地法律法规, "
 					  @"逆向工程仅为学习目的\n盗用源码进行商业用途/发布但未标记开源项目必究\n详情请参阅项目内 MIT 许可证\n\n请输入\"我已阅读并同意继续使用\"以继续",
 					  ^{
 					    showUserAgreementAlert();
@@ -2448,25 +2448,19 @@ static void showUserAgreementAlert() {
 
 		  // 添加关于
 		  AWESettingItemModel *aboutItem = [[%c(AWESettingItemModel) alloc] init];
-		  aboutItem.identifier = @"DYYYAbout";
+		  aboutItem.identifier = @"DouYinHookAbout";
 		  aboutItem.title = @"关于插件";
-		  aboutItem.detail = @"v2.2-4";
+		  aboutItem.detail = @"v2.2-8";
 		  aboutItem.type = 0;
 		  aboutItem.iconImageName = @"awe-settings-icon-about";
 		  aboutItem.cellType = 26;
 		  aboutItem.colorStyle = 0;
 		  aboutItem.isEnable = YES;
 		  aboutItem.cellTappedBlock = ^{
-		    showAboutDialog(@"关于DYYY",
-				    @"版本: v2.2-4\n\n"
-				    @"感谢使用DYYY\n\n"
-				    @"感谢huami开源\n\n"
-				    @"@维他入我心 基于DYYY二次开发\n\n"
-				    @"感谢huami group中群友的支持赞助\n\n"
-				    @"Telegram @huamidev\n\n"
-				    @"Telegram @vita_app\n\n"
-				    @"开源地址 huami1314/DYYY\n\n"
-				    @"仓库地址 Wtrwx/DYYY\n\n",
+		    showAboutDialog(@"关于抖音图层",
+				    @"版本: v2.2-8\n\n"
+				    @"感谢使用抖音图层\n\n"
+				    @"Telegram @DouYinHook\n\n",
 				    nil);
 		  };
 		  [aboutItems addObject:aboutItem];
@@ -2512,7 +2506,7 @@ static void showUserAgreementAlert() {
 		newSection.itemArray = @[ dyyyItem ];
 		newSection.type = 0;
 		newSection.sectionHeaderHeight = 40;
-		newSection.sectionHeaderTitle = @"DYYY";
+		newSection.sectionHeaderTitle = @"抖音图层";
 		NSMutableArray *newSections = [NSMutableArray arrayWithArray:originalSections];
 		[newSections insertObject:newSection atIndex:0];
 		return newSections;
