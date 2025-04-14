@@ -436,7 +436,7 @@ static void showUserAgreementAlert() {
 		  BOOL hasAgreed = getUserDefaults(@"DYYYUserAgreementAccepted");
 		  if (!hasAgreed) {
 			  showAboutDialog(@"用户协议",
-					  @"本插件为开源项目\n仅供学习交流用途\n如有侵权请联系, Telegram：https://tme/DouYinHook \n请遵守当地法律法规, "
+					  @"本插件为开源项目\n仅供学习交流用途\n如有侵权请联系, Telegram：https://t.me/huamidev \n请遵守当地法律法规, "
 					  @"逆向工程仅为学习目的\n盗用源码进行商业用途/发布但未标记开源项目必究\n详情请参阅项目内 MIT 许可证\n\n请输入\"我已阅读并同意继续使用\"以继续",
 					  ^{
 					    showUserAgreementAlert();
