@@ -53,7 +53,7 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.title = @"DYYY设置";
+    self.title = @"抖音图层";
     self.expandedSections = [NSMutableSet set];
     self.isAgreementShown = NO;
     
@@ -295,7 +295,7 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
 
 - (void)setupFooterLabel {
     self.footerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, 50)];
-    self.footerLabel.text = [NSString stringWithFormat:@"Developer By @huamidev\nVersion: %@ (%@)", @"2.2-4", @"2503End"];
+    self.footerLabel.text = [NSString stringWithFormat:@"Developer By @是嘉嘉耶\nVersion: %@ (%@)", @"2.2-8", @"2504End"];
     self.footerLabel.textAlignment = NSTextAlignmentCenter;
     self.footerLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightRegular];
     self.footerLabel.textColor = [UIColor colorWithRed:173/255.0 green:216/255.0 blue:230/255.0 alpha:1.0];
