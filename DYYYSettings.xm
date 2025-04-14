@@ -338,7 +338,7 @@ static void showIconOptionsDialog(NSString *title, UIImage *previewImage, NSStri
 }
 
 #undef DYYY
-#define DYYY @"抖音图层"
+#define DYYY @"抖音净化"
 
 static void *kViewModelKey = &kViewModelKey;
 %hook AWESettingBaseViewController
@@ -422,9 +422,9 @@ static void showUserAgreementAlert() {
 	if (self.traceEnterFrom && !sectionExists) {
 
 		AWESettingItemModel *dyyyItem = [[%c(AWESettingItemModel) alloc] init];
-		dyyyItem.identifier = @"抖音图层";
-		dyyyItem.title = @"抖音图层";
-		dyyyItem.detail = @"v2.2-8";
+		dyyyItem.identifier = @"抖音净化";
+		dyyyItem.title = @"抖音净化";
+		dyyyItem.detail = @"v3.0.3";
 		dyyyItem.type = 0;
 		dyyyItem.svgIconImageName = @"ic_sapling_outlined";
 		dyyyItem.cellType = 26;
@@ -2457,9 +2457,9 @@ static void showUserAgreementAlert() {
 		  aboutItem.colorStyle = 0;
 		  aboutItem.isEnable = YES;
 		  aboutItem.cellTappedBlock = ^{
-		    showAboutDialog(@"关于抖音图层",
-				    @"版本: v2.2-8\n\n"
-				    @"感谢使用抖音图层\n\n"
+		    showAboutDialog(@"关于抖音净化",
+				    @"版本: v3.0.3\n\n"
+				    @"感谢使用抖音净化\n\n"
 				    @"Telegram @DouYinHook\n\n",
 				    nil);
 		  };
@@ -2506,7 +2506,7 @@ static void showUserAgreementAlert() {
 		newSection.itemArray = @[ dyyyItem ];
 		newSection.type = 0;
 		newSection.sectionHeaderHeight = 40;
-		newSection.sectionHeaderTitle = @"抖音图层";
+		newSection.sectionHeaderTitle = @"抖音净化";
 		NSMutableArray *newSections = [NSMutableArray arrayWithArray:originalSections];
 		[newSections insertObject:newSection atIndex:0];
 		return newSections;
