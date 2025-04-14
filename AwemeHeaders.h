@@ -109,6 +109,8 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @interface AWELongPressPanelManager : NSObject
 + (instancetype)shareInstance;
 - (void)dismissWithAnimation:(BOOL)animated completion:(void (^)(void))completion;
+- (BOOL)shouldShowMordenLongPressPanel;
+- (BOOL)showShareFriends;
 @end
 
 @interface AWENormalModeTabBarGeneralButton : UIButton
@@ -135,6 +137,8 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWELeftSideBarEntranceView : UIView
+- (void)setNumericalRedDot:(id)numericalRedDot;
+- (void)setRedDot:(id)redDot;
 @end
 
 @interface AWEDanmakuContentLabel : UILabel
@@ -148,7 +152,13 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, strong) UIView *view;
 - (void)performCommentAction;
 - (void)performLikeAction;
+- (void)showSharePanel;
+- (void)showDislikeOnVideo;
 - (void)onVideoPlayerViewDoubleClicked:(id)arg1;
+- (UIViewController *)firstAvailableUIViewController;
+- (void)speedButtonTapped:(id)sender;
+- (void)buttonTouchDown:(id)sender;
+- (void)buttonTouchUp:(id)sender;
 @end
 
 @interface UIView (Transparency)
@@ -177,6 +187,10 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWEBaseElementView : UIView
+
+@end
+
+@interface AWESearchEntranceView : UIView
 
 @end
 
@@ -212,7 +226,7 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWENormalModeTabBar : UIView
-
+@property (nonatomic, assign, readonly) UITabBarController *yy_viewController;
 @end
 
 @interface AWEPlayInteractionListenFeedView : UIView
@@ -337,6 +351,7 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWEFeedProgressSlider : UIView
+@property(nonatomic, assign) float maximumValue;
 @property (nonatomic, strong) UIView *leftLabelUI;
 @property (nonatomic, strong) UIView *rightLabelUI;
 @property (nonatomic) AWEPlayInteractionProgressController * progressSliderDelegate;
@@ -598,6 +613,7 @@ typedef NS_ENUM(NSInteger, MediaType) {
 //直播 退出清屏、投屏按钮
 @interface IESLiveButton : UIView
 @end
+
 //直播点歌
 @interface IESLiveKTVSongIndicatorView : UIView
 @end
@@ -620,4 +636,42 @@ typedef NS_ENUM(NSInteger, MediaType) {
 
 //直播间流量提醒弹窗
 @interface AWELiveFlowAlertView : UIView
+@end
+
+//搜索视频底部评论视图
+@interface AWECommentInputBackgroundView : UIView
+@end
+
+//聊天视频底部快速回复视图
+@interface AWEIMFeedBottomQuickEmojiInputBar : UIView
+@end
+
+@interface DUXBadge : UIView
+@end
+
+@interface ACCEditTagStickerView : UIView
+@end
+
+@interface AWESearchFeedTagView : UIView
+@end
+
+@interface AFDRecommendToFriendTagView : UIView
+@end
+
+@interface AFDAIbumFolioView : UIView
+@end
+
+@interface AWEHPTopBarCTAItemView : UIView
+@end
+
+//应用内推送容器
+@interface AWEInnerNotificationWindow : UIWindow
+- (void)setupBlurEffectForNotificationView;
+- (void)applyBlurEffectToView:(UIView *)containerView;
+- (void)setLabelsColorWhiteInView:(UIView *)view;
+- (void)clearBackgroundRecursivelyInView:(UIView *)view;
+@end
+
+@interface AWEFakeProgressSliderView : UIView
+- (void)applyCustomProgressStyle;
 @end
