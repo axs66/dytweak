@@ -13,7 +13,7 @@
 #import <objc/runtime.h>
 
 #define DYYY @"DYYY"
-#define tweakVersion @"2.2-4"
+#define tweakVersion @"3.0.3"
 
 @interface DYYYManager (API)
 + (void)parseAndDownloadVideoWithShareLink:(NSString *)shareLink apiKey:(NSString *)apiKey;
