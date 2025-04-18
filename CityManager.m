@@ -3551,7 +3551,8 @@
         @"659009":@"昆玉市",
         @"659010":@"胡杨河市",
         @"659011":@"新星市",
-        @"659012":@"白杨市"};
+        @"659012":@"白杨市"
+    };
 }
 
 - (NSString *)getCityNameWithCode:(NSString *)code {
@@ -3564,7 +3565,7 @@
         result = self.cityCodeMap[code];
         if (result) return result;
 
-        // 按层级递减 fallback（四级 -> 三级 -> 二级）
+        // 逐级向上找：县/区 → 市 → 省
         if (code.length >= 9) {
             code = [code substringToIndex:9];
         } else if (code.length >= 6) {
@@ -3578,6 +3579,45 @@
         }
     }
     return nil;
+}
+
+- (NSString *)getProvinceNameWithCode:(NSString *)code {
+    if (!code || code.length < 2) {
+        return nil;
+    }
+    NSString *provinceCode = [NSString stringWithFormat:@"%@0000", [code substringToIndex:2]];
+    return self.cityCodeMap[provinceCode];
+}
+
+- (NSString *)getFullCityNameWithCode:(NSString *)code {
+    if (!code || code.length < 6) {
+        return nil;
+    }
+
+    NSMutableArray *components = [NSMutableArray array];
+
+    // 省
+    NSString *provinceCode = [NSString stringWithFormat:@"%@0000", [code substringToIndex:2]];
+    NSString *province = self.cityCodeMap[provinceCode];
+    if (province) {
+        [components addObject:province];
+    }
+
+    // 市
+    NSString *cityCode = [NSString stringWithFormat:@"%@00", [code substringToIndex:4]];
+    NSString *city = self.cityCodeMap[cityCode];
+    if (city && ![components containsObject:city]) {
+        [components addObject:city];
+    }
+
+    // 县/区
+    NSString *districtCode = [code substringToIndex:6];
+    NSString *district = self.cityCodeMap[districtCode];
+    if (district && ![components containsObject:district]) {
+        [components addObject:district];
+    }
+
+    return [components componentsJoinedByString:@" "];
 }
 
 @end
