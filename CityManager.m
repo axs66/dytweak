@@ -41565,24 +41565,40 @@
 }
 
 - (NSString *)getCityNameWithCode:(NSString *)code {
-    if (!code || code.length < 6) {
+    if (!code || code.length < 2) {
         return nil;
     }
     
-    NSString *cityName = self.cityCodeMap[code];
-    
-    return cityName;
+    // 从完整 code 开始，逐步向上裁剪尝试匹配
+    NSString *result = nil;
+    while (code.length >= 2) {
+        result = self.cityCodeMap[code];
+        if (result) {
+            return result;
+        }
+        
+        // 智能 fallback：根据长度裁剪
+        if (code.length >= 9) {
+            code = [code substringToIndex:9];
+        } else if (code.length >= 6) {
+            code = [code substringToIndex:6];
+        } else if (code.length >= 4) {
+            code = [code substringToIndex:4];
+        } else if (code.length >= 2) {
+            code = [code substringToIndex:2];
+        } else {
+            break;
+        }
+    }
+    return nil;
 }
 
 - (NSString *)getProvinceNameWithCode:(NSString *)code {
-    if (!code || code.length < 6) {
+    if (!code || code.length < 2) {
         return nil;
     }
     NSString *provinceCode = [code substringToIndex:2];
-    provinceCode = [provinceCode stringByAppendingString:@"0000"];
-    NSString *provinceCodeName = self.cityCodeMap[provinceCode];
-    
-    return provinceCodeName;
+    return self.cityCodeMap[provinceCode];
 }
 
 @end
