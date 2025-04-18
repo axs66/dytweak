@@ -16,11 +16,13 @@
 // 数据获取方法
 - (NSString *)getProvinceNameWithCode:(NSString *)provinceCode;
 - (NSString *)getCityNameWithCode:(NSString *)cityCode;
-- (NSDictionary *)getDistrictsInCity:(NSString *)parentCode;
-- (NSArray *)getStreetsInDistrict:(NSString *)districtCode;
+- (NSString *)getDistrictNameWithCode:(NSString *)districtCode;
+- (NSString *)getFullCityNameWithCode:(NSString *)code; // ✅ ← 加这行
+
 - (NSDictionary<NSString *, NSString *> *)getAllProvinces;
 - (NSDictionary<NSString *, NSString *> *)getCitiesInProvince:(NSString *)provinceCode;
-- (NSString *)getDistrictNameWithCode:(NSString *)districtCode;
+- (NSDictionary *)getDistrictsInCity:(NSString *)parentCode;
+- (NSArray *)getStreetsInDistrict:(NSString *)districtCode;
 
 // 城市选择器方法
 - (void)showCitySelectorInViewController:(UIViewController *)parentVC delegate:(id<CitySelectorDelegate>)delegate;
