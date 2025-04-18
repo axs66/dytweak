@@ -13,7 +13,7 @@
 #import <objc/runtime.h>
 
 #define DYYY @"DYYY"
-#define tweakVersion @"3.0.3"
+#define tweakVersion @"2.2-4"
 
 @interface DYYYManager (API)
 + (void)parseAndDownloadVideoWithShareLink:(NSString *)shareLink apiKey:(NSString *)apiKey;
@@ -1632,59 +1632,71 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 %end
 
 %hook AWEPlayInteractionTimestampElement
-
 - (id)timestampLabel {
-    UILabel *label = %orig;  // 获取原始的 label
+	UILabel *label = %orig;
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"]) {
+		NSString *text = label.text;
+		NSString *cityCode = self.model.cityCode;
 
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"]) {
-        NSString *text = label.text;
-        NSString *cityCode = self.model.cityCode;
+		if (cityCode.length > 0) {
+			NSString *cityName = [CityManager.sharedInstance getCityNameWithCode:cityCode] ?: @"";
+			NSString *provinceName = [CityManager.sharedInstance getProvinceNameWithCode:cityCode] ?: @"";
 
-        if (cityCode.length > 0) {
-            NSString *fullCityName = [[CityManager sharedInstance] getFullCityNameWithCode:cityCode] ?: @"";
+			if (cityName.length > 0 && ![text containsString:cityName]) {
+				if (!self.model.ipAttribution) {
+					BOOL isDirectCity = [provinceName isEqualToString:cityName] ||
+							    ([cityCode hasPrefix:@"11"] || [cityCode hasPrefix:@"12"] || [cityCode hasPrefix:@"31"] || [cityCode hasPrefix:@"50"]);
 
-            if (fullCityName.length > 0 && ![text containsString:fullCityName]) {
-                if (!self.model.ipAttribution) {
-                    label.text = [NSString stringWithFormat:@"%@  IP属地：%@", text, fullCityName];
-                } else {
-                    BOOL containsName = [text containsString:fullCityName];
-                    if (!containsName) {
-                        label.text = [NSString stringWithFormat:@"%@ %@", text, fullCityName];
-                    } else {
-                        label.text = text;
-                    }
-                }
-            }
-        }
-    }
+					if (isDirectCity) {
+						label.text = [NSString stringWithFormat:@"%@  IP属地：%@", text, cityName];
+					} else {
+						label.text = [NSString stringWithFormat:@"%@  IP属地：%@ %@", text, provinceName, cityName];
+					}
+				} else {
+					BOOL isDirectCity = [provinceName isEqualToString:cityName] ||
+							    ([cityCode hasPrefix:@"11"] || [cityCode hasPrefix:@"12"] || [cityCode hasPrefix:@"31"] || [cityCode hasPrefix:@"50"]);
 
-    // 应用IP属地标签上移
-    NSString *ipScaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
-    if (ipScaleValue.length > 0) {
-        UIFont *originalFont = label.font;
-        CGRect originalFrame = label.frame;
-        CGFloat offset = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYIPLabelVerticalOffset"];
-        if (offset > 0) {
-            CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -offset);
-            label.transform = translationTransform;
-        } else {
-            CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -3);
-            label.transform = translationTransform;
-        }
+					BOOL containsProvince = [text containsString:provinceName];
+					if (containsProvince && !isDirectCity) {
+						label.text = [NSString stringWithFormat:@"%@ %@", text, cityName];
+					} else if (containsProvince && isDirectCity) {
+						label.text = [NSString stringWithFormat:@"%@  IP属地：%@", text, cityName];
+					} else if (isDirectCity && containsProvince) {
+						label.text = text;
+					} else if (containsProvince) {
+						label.text = [NSString stringWithFormat:@"%@ %@", text, cityName];
+					} else {
+						label.text = text;
+					}
+				}
+			}
+		}
+	}
+	// 应用IP属地标签上移
+	NSString *ipScaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
+	if (ipScaleValue.length > 0) {
+		UIFont *originalFont = label.font;
+		CGRect originalFrame = label.frame;
+		CGFloat offset = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYIPLabelVerticalOffset"];
+		if (offset > 0) {
+			CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -offset);
+			label.transform = translationTransform;
+		} else {
+			CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -3);
+			label.transform = translationTransform;
+		}
 
-        label.font = originalFont;
-    }
-
-    NSString *labelColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYLabelColor"];
-    if (labelColor.length > 0) {
-        label.textColor = [DYYYManager colorWithHexString:labelColor];
-    }
-
-    return label;
+		label.font = originalFont;
+	}
+	NSString *labelColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYLabelColor"];
+	if (labelColor.length > 0) {
+		label.textColor = [DYYYManager colorWithHexString:labelColor];
+	}
+	return label;
 }
 
 + (BOOL)shouldActiveWithData:(id)arg1 context:(id)arg2 {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"];
+	return [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"];
 }
 
 %end
@@ -2234,8 +2246,14 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 	}
 
 	newGroupModel.groupArr = viewModels;
-
-	return [@[ newGroupModel ] arrayByAddingObjectsFromArray:originalArray];
+    
+    if (originalArray.count > 0) {
+        NSMutableArray *resultArray = [originalArray mutableCopy];
+        [resultArray insertObject:newGroupModel atIndex:1]; 
+        return [resultArray copy];
+    } else {
+        return @[newGroupModel];
+    }
 }
 
 %end
