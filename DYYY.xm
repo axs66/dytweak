@@ -1639,39 +1639,22 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 		NSString *cityCode = self.model.cityCode;
 
 		if (cityCode.length > 0) {
-			NSString *cityName = [CityManager.sharedInstance getCityNameWithCode:cityCode] ?: @"";
-			NSString *provinceName = [CityManager.sharedInstance getProvinceNameWithCode:cityCode] ?: @"";
+	NSString *fullCityName = [[CityManager sharedInstance] getFullCityNameWithCode:cityCode] ?: @"";
 
-			if (cityName.length > 0 && ![text containsString:cityName]) {
-				if (!self.model.ipAttribution) {
-					BOOL isDirectCity = [provinceName isEqualToString:cityName] ||
-							    ([cityCode hasPrefix:@"11"] || [cityCode hasPrefix:@"12"] || [cityCode hasPrefix:@"31"] || [cityCode hasPrefix:@"50"]);
-
-					if (isDirectCity) {
-						label.text = [NSString stringWithFormat:@"%@  IP属地：%@", text, cityName];
-					} else {
-						label.text = [NSString stringWithFormat:@"%@  IP属地：%@ %@", text, provinceName, cityName];
-					}
-				} else {
-					BOOL isDirectCity = [provinceName isEqualToString:cityName] ||
-							    ([cityCode hasPrefix:@"11"] || [cityCode hasPrefix:@"12"] || [cityCode hasPrefix:@"31"] || [cityCode hasPrefix:@"50"]);
-
-					BOOL containsProvince = [text containsString:provinceName];
-					if (containsProvince && !isDirectCity) {
-						label.text = [NSString stringWithFormat:@"%@ %@", text, cityName];
-					} else if (containsProvince && isDirectCity) {
-						label.text = [NSString stringWithFormat:@"%@  IP属地：%@", text, cityName];
-					} else if (isDirectCity && containsProvince) {
-						label.text = text;
-					} else if (containsProvince) {
-						label.text = [NSString stringWithFormat:@"%@ %@", text, cityName];
-					} else {
-						label.text = text;
-					}
-				}
+	if (fullCityName.length > 0 && ![text containsString:fullCityName]) {
+		if (!self.model.ipAttribution) {
+			label.text = [NSString stringWithFormat:@"%@  IP属地：%@", text, fullCityName];
+		} else {
+			BOOL containsName = [text containsString:fullCityName];
+			if (!containsName) {
+				label.text = [NSString stringWithFormat:@"%@ %@", text, fullCityName];
+			} else {
+				label.text = text;
 			}
 		}
 	}
+}
+
 	// 应用IP属地标签上移
 	NSString *ipScaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
 	if (ipScaleValue.length > 0) {
