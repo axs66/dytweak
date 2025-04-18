@@ -1145,26 +1145,31 @@ typedef NS_ENUM(NSInteger, CitySelectorLevel) {
 - (NSString *)getFullCityNameWithCode:(NSString *)code {
     if (!code || code.length < 6) return nil;
 
-    NSString *provinceCode = [code substringToIndex:2];
-    NSString *cityCode = [code substringToIndex:4];
-    NSString *districtCode = [code substringToIndex:6];
+    NSString *provinceCode = [[code substringToIndex:2] stringByAppendingString:@"0000"];
+    NSString *cityCode = [[code substringToIndex:4] stringByAppendingString:@"00"];
+    NSString *districtCode = code;
 
-    NSString *provinceName = self.provincesDict[[provinceCode stringByAppendingString:@"0000"]];
-    NSString *cityName = self.citiesDict[[cityCode stringByAppendingString:@"00"]];
-
-    // 查找 districtName，注意需要先获取 cityCode 对应的所有区县
-    NSDictionary *districtMap = self.allDistrictsDict[[cityCode stringByAppendingString:@"00"]];
-    NSString *districtName = districtMap[code];
+    NSString *provinceName = [self getProvinceNameWithCode:provinceCode];
+    NSString *cityName = [self getCityNameWithCode:cityCode];
+    NSString *districtName = [self getDistrictNameWithCode:districtCode];
 
     NSMutableArray *components = [NSMutableArray array];
+
     if (provinceName) [components addObject:provinceName];
-    if (cityName && ![cityName isEqualToString:provinceName]) [components addObject:cityName];
-    if (districtName && ![components containsObject:districtName]) [components addObject:districtName];
+
+    // 直辖市（北京、天津、上海、重庆）特殊处理
+    BOOL isDirectCity = [@[@"110000", @"120000", @"310000", @"500000"] containsObject:provinceCode];
+    if (!isDirectCity && cityName && ![cityName isEqualToString:provinceName]) {
+        [components addObject:cityName];
+    }
+
+    if (districtName && ![components containsObject:districtName]) {
+        [components addObject:districtName];
+    }
 
     return [components componentsJoinedByString:@" "];
 }
 
-- (NSString *)getFullCityNameWithCode:(NSString *)code;
     
     // 根据区县代码长度判断类型
     if (areaCode.length >= 6) {
