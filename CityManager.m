@@ -53,6 +53,33 @@ typedef NS_ENUM(NSInteger, CitySelectorLevel) {
     return sharedInstance;
 }
 
+- (NSString *)getFullCityNameWithCode:(NSString *)code {
+    if (!code || code.length < 6) return nil;
+
+    NSString *provinceCode = [[code substringToIndex:2] stringByAppendingString:@"0000"];
+    NSString *cityCode = [[code substringToIndex:4] stringByAppendingString:@"00"];
+    NSString *districtCode = code;
+
+    NSString *provinceName = [self getProvinceNameWithCode:provinceCode];
+    NSString *cityName = [self getCityNameWithCode:cityCode];
+    NSString *districtName = [self getDistrictNameWithCode:districtCode];
+
+    NSMutableArray *components = [NSMutableArray array];
+    if (provinceName) [components addObject:provinceName];
+
+    // 如果不是直辖市，再加入市名
+    BOOL isDirectCity = [@[@"110000", @"120000", @"310000", @"500000"] containsObject:provinceCode];
+    if (!isDirectCity && cityName && ![cityName isEqualToString:provinceName]) {
+        [components addObject:cityName];
+    }
+
+    if (districtName && ![components containsObject:districtName]) {
+        [components addObject:districtName];
+    }
+
+    return [components componentsJoinedByString:@" "];
+}
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -1141,36 +1168,7 @@ typedef NS_ENUM(NSInteger, CitySelectorLevel) {
     if (!areaCode || areaCode.length < 2) {
         return;
     }
-
-- (NSString *)getFullCityNameWithCode:(NSString *)code {
-    if (!code || code.length < 6) return nil;
-
-    NSString *provinceCode = [[code substringToIndex:2] stringByAppendingString:@"0000"];
-    NSString *cityCode = [[code substringToIndex:4] stringByAppendingString:@"00"];
-    NSString *districtCode = code;
-
-    NSString *provinceName = [self getProvinceNameWithCode:provinceCode];
-    NSString *cityName = [self getCityNameWithCode:cityCode];
-    NSString *districtName = [self getDistrictNameWithCode:districtCode];
-
-    NSMutableArray *components = [NSMutableArray array];
-
-    if (provinceName) [components addObject:provinceName];
-
-    // 直辖市（北京、天津、上海、重庆）特殊处理
-    BOOL isDirectCity = [@[@"110000", @"120000", @"310000", @"500000"] containsObject:provinceCode];
-    if (!isDirectCity && cityName && ![cityName isEqualToString:provinceName]) {
-        [components addObject:cityName];
-    }
-
-    if (districtName && ![components containsObject:districtName]) {
-        [components addObject:districtName];
-    }
-
-    return [components componentsJoinedByString:@" "];
-}
-
-    
+   
     // 根据区县代码长度判断类型
     if (areaCode.length >= 6) {
         // 这是区县代码
