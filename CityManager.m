@@ -3556,16 +3556,13 @@
 }
 
 - (NSString *)getCityNameWithCode:(NSString *)code {
-    if (!code || code.length < 2) {
-        return nil;
-    }
+    if (!code || code.length < 2) return nil;
 
     NSString *result = nil;
     while (code.length >= 2) {
         result = self.cityCodeMap[code];
         if (result) return result;
 
-        // 逐级向上找：县/区 → 市 → 省
         if (code.length >= 9) {
             code = [code substringToIndex:9];
         } else if (code.length >= 6) {
@@ -3582,40 +3579,30 @@
 }
 
 - (NSString *)getProvinceNameWithCode:(NSString *)code {
-    if (!code || code.length < 2) {
-        return nil;
-    }
-    NSString *provinceCode = [NSString stringWithFormat:@"%@0000", [code substringToIndex:2]];
-    return self.cityCodeMap[provinceCode];
+    if (!code || code.length < 2) return nil;
+
+    NSString *provinceCode = [code substringToIndex:2];
+    NSString *fullProvinceCode = [provinceCode stringByPaddingToLength:6 withString:@"0" startingAtIndex:0];
+    return self.cityCodeMap[fullProvinceCode];
 }
 
 - (NSString *)getFullCityNameWithCode:(NSString *)code {
-    if (!code || code.length < 6) {
-        return nil;
-    }
+    if (!code || code.length < 2) return nil;
+
+    NSString *provinceCode = [code substringToIndex:2];
+    NSString *cityCode = code.length >= 4 ? [code substringToIndex:4] : nil;
+    NSString *districtCode = code.length >= 6 ? [code substringToIndex:6] : nil;
 
     NSMutableArray *components = [NSMutableArray array];
 
-    // 省
-    NSString *provinceCode = [NSString stringWithFormat:@"%@0000", [code substringToIndex:2]];
-    NSString *province = self.cityCodeMap[provinceCode];
-    if (province) {
-        [components addObject:province];
-    }
+    NSString *provinceName = self.cityCodeMap[[provinceCode stringByPaddingToLength:6 withString:@"0" startingAtIndex:0]];
+    if (provinceName) [components addObject:provinceName];
 
-    // 市
-    NSString *cityCode = [NSString stringWithFormat:@"%@00", [code substringToIndex:4]];
-    NSString *city = self.cityCodeMap[cityCode];
-    if (city && ![components containsObject:city]) {
-        [components addObject:city];
-    }
+    NSString *cityName = self.cityCodeMap[[cityCode stringByPaddingToLength:6 withString:@"0" startingAtIndex:0]];
+    if (cityName && ![cityName isEqualToString:provinceName]) [components addObject:cityName];
 
-    // 县/区
-    NSString *districtCode = [code substringToIndex:6];
-    NSString *district = self.cityCodeMap[districtCode];
-    if (district && ![components containsObject:district]) {
-        [components addObject:district];
-    }
+    NSString *districtName = self.cityCodeMap[code];
+    if (districtName && ![components containsObject:districtName]) [components addObject:districtName];
 
     return [components componentsJoinedByString:@" "];
 }
