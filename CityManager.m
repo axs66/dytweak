@@ -1141,6 +1141,30 @@ typedef NS_ENUM(NSInteger, CitySelectorLevel) {
     if (!areaCode || areaCode.length < 2) {
         return;
     }
+
+- (NSString *)getFullCityNameWithCode:(NSString *)code {
+    if (!code || code.length < 6) return nil;
+
+    NSString *provinceCode = [code substringToIndex:2];
+    NSString *cityCode = [code substringToIndex:4];
+    NSString *districtCode = [code substringToIndex:6];
+
+    NSString *provinceName = self.provincesDict[[provinceCode stringByAppendingString:@"0000"]];
+    NSString *cityName = self.citiesDict[[cityCode stringByAppendingString:@"00"]];
+
+    // 查找 districtName，注意需要先获取 cityCode 对应的所有区县
+    NSDictionary *districtMap = self.allDistrictsDict[[cityCode stringByAppendingString:@"00"]];
+    NSString *districtName = districtMap[code];
+
+    NSMutableArray *components = [NSMutableArray array];
+    if (provinceName) [components addObject:provinceName];
+    if (cityName && ![cityName isEqualToString:provinceName]) [components addObject:cityName];
+    if (districtName && ![components containsObject:districtName]) [components addObject:districtName];
+
+    return [components componentsJoinedByString:@" "];
+}
+
+- (NSString *)getFullCityNameWithCode:(NSString *)code;
     
     // 根据区县代码长度判断类型
     if (areaCode.length >= 6) {
