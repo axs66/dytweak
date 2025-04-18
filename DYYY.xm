@@ -1632,54 +1632,59 @@ static void DYYYAddCustomViewToParent(UIView *parentView, float transparency) {
 %end
 
 %hook AWEPlayInteractionTimestampElement
+
 - (id)timestampLabel {
-	UILabel *label = %orig;
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"]) {
-		NSString *text = label.text;
-		NSString *cityCode = self.model.cityCode;
+    UILabel *label = %orig;  // 获取原始的 label
 
-		if (cityCode.length > 0) {
-	NSString *fullCityName = [[CityManager sharedInstance] getFullCityNameWithCode:cityCode] ?: @"";
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"]) {
+        NSString *text = label.text;
+        NSString *cityCode = self.model.cityCode;
 
-	if (fullCityName.length > 0 && ![text containsString:fullCityName]) {
-		if (!self.model.ipAttribution) {
-			label.text = [NSString stringWithFormat:@"%@  IP属地：%@", text, fullCityName];
-		} else {
-			BOOL containsName = [text containsString:fullCityName];
-			if (!containsName) {
-				label.text = [NSString stringWithFormat:@"%@ %@", text, fullCityName];
-			} else {
-				label.text = text;
-			}
-		}
-	}
-}
+        if (cityCode.length > 0) {
+            NSString *fullCityName = [[CityManager sharedInstance] getFullCityNameWithCode:cityCode] ?: @"";
 
-	// 应用IP属地标签上移
-	NSString *ipScaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
-	if (ipScaleValue.length > 0) {
-		UIFont *originalFont = label.font;
-		CGRect originalFrame = label.frame;
-		CGFloat offset = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYIPLabelVerticalOffset"];
-		if (offset > 0) {
-			CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -offset);
-			label.transform = translationTransform;
-		} else {
-			CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -3);
-			label.transform = translationTransform;
-		}
+            if (fullCityName.length > 0 && ![text containsString:fullCityName]) {
+                if (!self.model.ipAttribution) {
+                    label.text = [NSString stringWithFormat:@"%@  IP属地：%@", text, fullCityName];
+                } else {
+                    BOOL containsName = [text containsString:fullCityName];
+                    if (!containsName) {
+                        label.text = [NSString stringWithFormat:@"%@ %@", text, fullCityName];
+                    } else {
+                        label.text = text;
+                    }
+                }
+            }
+        }
+    }
 
-		label.font = originalFont;
-	}
-	NSString *labelColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYLabelColor"];
-	if (labelColor.length > 0) {
-		label.textColor = [DYYYManager colorWithHexString:labelColor];
-	}
-	return label;
+    // 应用IP属地标签上移
+    NSString *ipScaleValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYNicknameScale"];
+    if (ipScaleValue.length > 0) {
+        UIFont *originalFont = label.font;
+        CGRect originalFrame = label.frame;
+        CGFloat offset = [[NSUserDefaults standardUserDefaults] floatForKey:@"DYYYIPLabelVerticalOffset"];
+        if (offset > 0) {
+            CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -offset);
+            label.transform = translationTransform;
+        } else {
+            CGAffineTransform translationTransform = CGAffineTransformMakeTranslation(0, -3);
+            label.transform = translationTransform;
+        }
+
+        label.font = originalFont;
+    }
+
+    NSString *labelColor = [[NSUserDefaults standardUserDefaults] objectForKey:@"DYYYLabelColor"];
+    if (labelColor.length > 0) {
+        label.textColor = [DYYYManager colorWithHexString:labelColor];
+    }
+
+    return label;
 }
 
 + (BOOL)shouldActiveWithData:(id)arg1 context:(id)arg2 {
-	return [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"];
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYisEnableArea"];
 }
 
 %end
