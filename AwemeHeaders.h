@@ -1,7 +1,7 @@
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
 
-#define DYYY 100
+#define DYYYGetBool(key) [[NSUserDefaults standardUserDefaults] boolForKey:key]
 
 typedef NS_ENUM(NSInteger, MediaType) {
     MediaTypeVideo,
@@ -60,6 +60,12 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, copy) NSString *secUid;
 @end
 
+@interface AWEUserModel : NSObject
+@property(copy, nonatomic) NSString *nickname;
+@property(copy, nonatomic) NSString *shortID;
+@end
+
+
 @interface AWEAwemeModel : NSObject
 @property (nonatomic, strong, readwrite) NSNumber *createTime;
 @property (nonatomic, assign,readwrite) CGFloat videoDuration;
@@ -82,6 +88,7 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, copy) NSString *itemTitle;
 @property (nonatomic, copy) NSString *descriptionSimpleString;
 @property (nonatomic, strong) NSString *itemID;
+@property (nonatomic, strong) AWEUserModel *author;
 
 @property (nonatomic, strong) AWEAwemeStatisticsModel *statistics;
 - (BOOL)isLive;
@@ -95,6 +102,7 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, assign) BOOL showIfNeed;
 @property (nonatomic, copy) NSString *duxIconName;
 @property (nonatomic, copy) void (^action)(void);
+@property (nonatomic) BOOL isModern;
 @property (nonatomic, strong) AWEAwemeModel *awemeModel;
 - (void)setDuxIconName:(NSString *)iconName;
 - (void)setDescribeString:(NSString *)descString;
@@ -102,8 +110,13 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @end
 
 @interface AWELongPressPanelViewGroupModel : NSObject
-@property (nonatomic, assign) NSInteger groupType;
-@property (nonatomic, strong) NSArray *groupArr;
+@property (nonatomic) unsigned long long groupType;
+@property (nonatomic) NSArray *groupArr;
+@property (nonatomic) long long numberOfRowsInSection;
+@property (nonatomic) long long cellHeight;
+@property (nonatomic) BOOL hasMore;
+@property (nonatomic) BOOL isModern;
+@property (nonatomic) BOOL isDYYYCustomGroup;
 @end
 
 @interface AWELongPressPanelManager : NSObject
@@ -303,6 +316,29 @@ typedef NS_ENUM(NSInteger, MediaType) {
 
 @interface AWEModernLongPressPanelTableViewController : UIViewController
 @property (nonatomic, strong) AWEAwemeModel *awemeModel;
+@end
+
+@interface AWEModernLongPressHorizontalSettingCell : UITableViewCell
+@property (nonatomic, strong) UICollectionView *collectionView;
+@property (nonatomic, strong) NSArray *dataArray;
+@property (nonatomic, strong) AWELongPressPanelViewGroupModel *longPressViewGroupModel;
+@end
+
+@interface AWEModernLongPressHorizontalSettingItemCell : UICollectionViewCell
+@property (nonatomic, strong) UIView *contentView;
+@property (nonatomic, strong) UIImageView *buttonIcon;
+@property (nonatomic, strong) UILabel *buttonLabel;
+@property (nonatomic, strong) UIView *separator;
+@property (nonatomic, strong) AWELongPressPanelBaseViewModel *longPressPanelVM;
+
+- (void)updateUI:(AWELongPressPanelBaseViewModel *)viewModel;
+@end
+
+@interface AWEModernLongPressInteractiveCell : UITableViewCell
+@property (nonatomic, strong) UICollectionView *collectionView;
+@property (nonatomic, strong) AWELongPressPanelViewGroupModel *longPressViewGroupModel;
+@property (nonatomic, strong) NSArray *dataArray;
+@property (nonatomic, assign) BOOL isAppearing;
 @end
 
 @interface DYYYSettingViewController : UIViewController
@@ -583,8 +619,11 @@ typedef NS_ENUM(NSInteger, MediaType) {
 
 @interface AWEUserActionSheetView : UIView
 - (instancetype)init;
+- (UIView *)containerView;
 - (void)setActions:(NSArray *)actions;
 - (void)show;
+- (void)applyBlurEffectAndWhiteText;
+- (void)setTextColorWhiteRecursivelyInView:(UIView *)view;
 @end
 
 @interface AWEUserSheetAction : NSObject
@@ -674,4 +713,162 @@ typedef NS_ENUM(NSInteger, MediaType) {
 
 @interface AWEFakeProgressSliderView : UIView
 - (void)applyCustomProgressStyle;
+@end
+
+// 添加 DUXContentSheet 相关声明
+@protocol IESIMContentSheetVCProtocol, AWEMRGlobalAlertTrackProtocol;
+@interface DUXBasicSheet : UIViewController
+@end
+
+@interface AWEBinding : NSObject
+@end
+
+@interface AWESettingItemModel : NSObject
+@property(nonatomic, copy) NSString *identifier;
+@property(nonatomic, copy) NSString *title;
+@property(nonatomic, copy) NSString *detail;
+@property(nonatomic, assign) NSInteger type;
+@property(nonatomic, copy) NSString *iconImageName;
+@property(nonatomic, copy) NSString *svgIconImageName;
+@property(nonatomic, assign) NSInteger cellType;
+@property(nonatomic, assign) NSInteger colorStyle;
+@property(nonatomic, assign) BOOL isEnable;
+@property(nonatomic, assign) BOOL isSwitchOn;
+@property(nonatomic, copy) void (^cellTappedBlock)(void);
+@property(nonatomic, copy) void (^switchChangedBlock)(void);
+@end
+
+
+@interface AWESettingBaseViewModel : NSObject
+@end
+
+@interface AWESettingBaseViewController : UIViewController
+@property(nonatomic, strong) UIView *view;
+- (AWESettingBaseViewModel *)viewModel;
+@end
+
+@interface AWESettingsViewModel : AWESettingBaseViewModel
+@property(nonatomic, assign) NSInteger colorStyle;
+@property(nonatomic, strong) NSArray *sectionDataArray;
+@property(nonatomic, weak) id controllerDelegate;
+@property(nonatomic, strong) NSString *traceEnterFrom;
+
+- (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict;
+- (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict cellTapHandlers:(NSMutableDictionary *)cellTapHandlers;
+
+- (void)applyDependencyRulesForItem:(AWESettingItemModel *)item;
+- (void)handleConflictsAndDependenciesForSetting:(NSString *)identifier isEnabled:(BOOL)isEnabled;
+- (void)updateDependentItemsForSetting:(NSString *)identifier value:(id)value;
+@end
+
+
+@interface AWENavigationBar : UIView
+@property(nonatomic, strong) UILabel *titleLabel;
+@end
+
+@interface AWESettingSectionModel : NSObject
+@property(nonatomic, assign) NSInteger type;
+@property(nonatomic, assign) CGFloat sectionHeaderHeight;
+@property(nonatomic, copy) NSString *sectionHeaderTitle;
+@property(nonatomic, strong) NSArray *itemArray;
+@property (retain, nonatomic) NSString *identifier;
+@property (copy, nonatomic) NSString *title;
+- (id)initWithIdentifier:(id)arg1;
+- (void)setIsSelect:(BOOL)arg1;
+- (BOOL)isSelect;
+- (void)setCellTappedBlock:(id)arg1;
+- (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict;
+- (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict cellTapHandlers:(NSMutableDictionary *)cellTapHandlers;
+- (void)applyDependencyRulesForItem:(AWESettingItemModel *)item;
+- (void)handleConflictsAndDependenciesForSetting:(NSString *)identifier isEnabled:(BOOL)isEnabled;
+- (void)updateDependentItemsForSetting:(NSString *)identifier value:(id)value;
+@end
+
+@interface AWEPrivacySettingActionSheetConfig : NSObject
+@property (copy, nonatomic) NSArray *models;
+@property (copy, nonatomic) NSString *headerText;
+@property (copy, nonatomic) NSString *headerTitleText;
+@property (nonatomic) BOOL needHighLight;
+@property (nonatomic) BOOL useCardUIStyle;
+@property (nonatomic) BOOL fromHalfScreen;
+@property (retain, nonatomic) UIImage *headerLabelIcon;
+@property (nonatomic) CGFloat sheetWidth;
+@property (nonatomic) BOOL adaptIpadFromHalfVC;
+@end
+
+@interface AWEPrivacySettingActionSheet : UIView
++ (id)sheetWithConfig:(id)arg1;
+@property (copy, nonatomic) id closeBlock;
+@end
+
+@interface DUXContentSheet : UIViewController
+- (void)showOnViewController:(id)arg1 completion:(id)arg2;
+- (instancetype)initWithRootViewController:(UIViewController *)controller withTopType:(NSInteger)topType withSheetAligment:(NSInteger)alignment;
+- (void)setAutoAlignmentCenter:(BOOL)center;
+- (void)setSheetCornerRadius:(CGFloat)radius;
+@property (retain, nonatomic) UIView *fullScreenView;
+@end
+
+@protocol AFDPrivacyHalfScreenViewControllerProtocol <NSObject>
+@end
+
+@interface AWEHalfScreenBaseViewController : UIViewController
+- (void)setCornerRadius:(CGFloat)radius;
+- (void)setOnlyTopCornerClips:(BOOL)onlyTop;
+@end
+
+@interface AWEButton : UIButton
+@end
+
+@interface AFDButton : UIButton
+@end
+
+@interface AWEProfileToggleView : UIView
+@end
+
+@interface DUXAbandonedButton : UIButton
+@end
+
+@interface AFDPrivacyHalfScreenViewController : AWEHalfScreenBaseViewController <AFDPrivacyHalfScreenViewControllerProtocol>
+@property (retain, nonatomic) UILabel *titleLabel;
+@property (retain, nonatomic) UILabel *contentLabel;
+@property (retain, nonatomic) UIImageView *imageView;
+@property (copy, nonatomic) void (^rightBtnClickedBlock)(void);
+@property (copy, nonatomic) void (^leftButtonClickedBlock)(void);
+@property (retain, nonatomic) AWEButton *leftCancelButton;
+@property (retain, nonatomic) AWEButton *rightConfirmButton;
+
+- (void)configWithImageView:(UIImageView *)imageView 
+                  lockImage:(UIImage *)lockImage 
+            defaultLockState:(BOOL)defaultLockState 
+             titleLabelText:(NSString *)titleText 
+           contentLabelText:(NSString *)contentText 
+       leftCancelButtonText:(NSString *)leftButtonText 
+      rightConfirmButtonText:(NSString *)rightButtonText 
+        rightBtnClickedBlock:(void (^)(void))rightBtnBlock 
+       leftButtonClickedBlock:(void (^)(void))leftBtnBlock;
+
+- (void)setCornerRadius:(CGFloat)radius;
+- (void)setOnlyTopCornerClips:(BOOL)onlyTop;
+- (void)setUseCardUIStyle:(BOOL)arg1;
+- (void)setShouldShowToggle:(BOOL)arg1;
+- (NSUInteger)animationStyle;
+- (NSUInteger)viewStyle;
+@end
+
+@interface AWELoadingAndVolumeView : UIView
+@end
+
+@interface BDImageView : UIImageView
+@end
+
+@interface AWEIMEmoticonModel : NSObject
+- (id)valueForKey:(NSString *)key;
+@end
+
+@interface AWEIMEmoticonPreviewV2 : UIView
+@property (nonatomic, strong) UIView *container;
+@property (nonatomic, strong) BDImageView *content;
+@property (nonatomic, strong) AWEIMEmoticonModel *model;
+- (void)dyyy_saveButtonTapped:(id)sender;
 @end
