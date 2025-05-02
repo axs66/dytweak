@@ -2042,7 +2042,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
     
     // 处理头像文本
     if ([key isEqualToString:@"DYYYAvatarTapText"]) {
-        self.avatarTapLabel.text = @"Axs";
+        self.avatarTapLabel.text = @"抖音净化";
     }
     
     // 刷新UI
