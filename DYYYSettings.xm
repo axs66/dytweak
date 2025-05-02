@@ -2598,7 +2598,7 @@ static void showUserAgreementAlert() {
 		newSection.itemArray = @[ dyyyItem ];
 		newSection.type = 0;
 		newSection.sectionHeaderHeight = 40;
-		newSection.sectionHeaderTitle = @"DYYY";
+		newSection.sectionHeaderTitle = @"抖音净化";
 		NSMutableArray *newSections = [NSMutableArray arrayWithArray:originalSections];
 		[newSections insertObject:newSection atIndex:0];
 		return newSections;
