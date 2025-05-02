@@ -204,7 +204,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
     
     self.avatarTapLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 120, self.view.bounds.size.width, 30)];
     NSString *customTapText = [[NSUserDefaults standardUserDefaults] stringForKey:@"DYYYAvatarTapText"];
-    self.avatarTapLabel.text = customTapText.length > 0 ? customTapText : @"pxx917144686";
+    self.avatarTapLabel.text = customTapText.length > 0 ? customTapText : @"Axs";
     self.avatarTapLabel.textAlignment = NSTextAlignmentCenter;
     self.avatarTapLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleTitle3];
     self.avatarTapLabel.textColor = [UIColor systemBlueColor];
@@ -393,7 +393,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
                 [DYYYSettingItem itemWithTitle:@"链接解析" key:@"DYYYInterfaceDownload" type:DYYYSettingItemTypeTextField placeholder:@"不设置，默认"],
                 [DYYYSettingItem itemWithTitle:@"清晰度" key:@"DYYYShowAllVideoQuality" type:DYYYSettingItemTypeSwitch],
                 [DYYYSettingItem itemWithTitle:@"屏蔽广告" key:@"DYYYNoAds" type:DYYYSettingItemTypeSwitch],
-                [DYYYSettingItem itemWithTitle:@"头像文本-修改" key:@"DYYYAvatarTapText" type:DYYYSettingItemTypeTextField placeholder:@"pxx917144686"],
+                [DYYYSettingItem itemWithTitle:@"头像文本-修改" key:@"DYYYAvatarTapText" type:DYYYSettingItemTypeTextField placeholder:@"Axs"],
                 [DYYYSettingItem itemWithTitle:@"菜单背景颜色" key:@"DYYYBackgroundColor" type:DYYYSettingItemTypeColorPicker],
                 [DYYYSettingItem itemWithTitle:@"默认倍速" key:@"DYYYDefaultSpeed" type:DYYYSettingItemTypeSpeedPicker placeholder:@"点击选择"],
                 [DYYYSettingItem itemWithTitle:@"倍速按钮-开关" key:@"DYYYEnableFloatSpeedButton" type:DYYYSettingItemTypeSwitch],
@@ -448,7 +448,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
     
     // 创建文本标签
     self.footerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, 40)];
-    self.footerLabel.text = @"Developer By @huamidev\nVersion: 2.1-7++ (修改2025-04-04)";
+    self.footerLabel.text = @"Developer By @huamidev\nVersion: 3.0.5 (Axs修改2025-05-12)";
     self.footerLabel.textAlignment = NSTextAlignmentCenter;
     self.footerLabel.font = [UIFont systemFontOfSize:14];
     self.footerLabel.textColor = [UIColor secondaryLabelColor];
@@ -1663,7 +1663,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
 }
 
 - (void)avatarTextFieldDidChange:(UITextField *)textField {
-    self.avatarTapLabel.text = textField.text.length > 0 ? textField.text : @"pxx917144686";
+    self.avatarTapLabel.text = textField.text.length > 0 ? textField.text : @"Axs";
 }
 
 - (void)headerTapped:(UIButton *)sender {
@@ -1878,7 +1878,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
             
             // 处理头像文本
             if ([item.key isEqualToString:@"DYYYAvatarTapText"]) {
-                self.avatarTapLabel.text = @"pxx917144686";
+                self.avatarTapLabel.text = @"Axs";
             }
             
             // 刷新UI
@@ -2042,7 +2042,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
     
     // 处理头像文本
     if ([key isEqualToString:@"DYYYAvatarTapText"]) {
-        self.avatarTapLabel.text = @"pxx917144686";
+        self.avatarTapLabel.text = @"Axs";
     }
     
     // 刷新UI
@@ -2053,7 +2053,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
 }
 
 - (void)showSourceCodePopup {
-    NSString *githubURL = @"https://github.com/pxx917144686/DYYY";
+    NSString *githubURL = @"https://github.com/Axs/DYYY";
     
     // 添加跳转前的动画效果
     CAKeyframeAnimation *pulseAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
