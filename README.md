@@ -1,4 +1,4 @@
-# DY
+# dytweak
 设置开启方法：双指长按 功能自测
 
 # 1.修改插件注入后的名称：Makefile第37~48行，DYYY改为dytweak；DYYY.plist改为dytweak.plist
@@ -22,7 +22,7 @@ showAboutDialog(@"关于抖音净化",
 				    nil);
 		  };
 		  
-注意：
+### 注意：
 # 1.本次调用PXX的UI文件：全覆盖
 # 2.修改声明：AwemeHeaders.h第344行
 @interface DYYYSettingViewController : UIViewController
