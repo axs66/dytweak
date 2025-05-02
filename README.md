@@ -32,7 +32,8 @@ showAboutDialog(@"关于抖音净化",
     
 # 注意：
 ## 1.本次调用PXX的UI文件：全覆盖
-## 2.修改声明：AwemeHeaders.h第344行
+## 2.修改声明：
+AwemeHeaders.h第344行
 @interface DYYYSettingViewController : UIViewController
 @end
 改为
@@ -45,4 +46,5 @@ showAboutDialog(@"关于抖音净化",
 // 替换为前向声明：
 @class DYYYSettingViewController;
 
-## 3.增加头文件：DYYY.xm第12行在#import "AwemeHeaders.h"后增加#import "DYYYSettingViewController.h"
+## 3.增加头文件：
+DYYY.xm第12行在#import "AwemeHeaders.h"后增加#import "DYYYSettingViewController.h"
