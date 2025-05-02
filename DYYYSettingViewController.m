@@ -1663,7 +1663,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
 }
 
 - (void)avatarTextFieldDidChange:(UITextField *)textField {
-    self.avatarTapLabel.text = textField.text.length > 0 ? textField.text : @"Axs";
+    self.avatarTapLabel.text = textField.text.length > 0 ? textField.text : @"抖音净化";
 }
 
 - (void)headerTapped:(UIButton *)sender {
@@ -1878,7 +1878,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
             
             // 处理头像文本
             if ([item.key isEqualToString:@"DYYYAvatarTapText"]) {
-                self.avatarTapLabel.text = @"抖音净化";
+                self.avatarTapLabel.text = @"Axs";
             }
             
             // 刷新UI
