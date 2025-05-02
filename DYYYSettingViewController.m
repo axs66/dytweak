@@ -393,7 +393,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
                 [DYYYSettingItem itemWithTitle:@"链接解析" key:@"DYYYInterfaceDownload" type:DYYYSettingItemTypeTextField placeholder:@"不设置，默认"],
                 [DYYYSettingItem itemWithTitle:@"清晰度" key:@"DYYYShowAllVideoQuality" type:DYYYSettingItemTypeSwitch],
                 [DYYYSettingItem itemWithTitle:@"屏蔽广告" key:@"DYYYNoAds" type:DYYYSettingItemTypeSwitch],
-                [DYYYSettingItem itemWithTitle:@"头像文本-修改" key:@"DYYYAvatarTapText" type:DYYYSettingItemTypeTextField placeholder:@"抖音净化"],
+                [DYYYSettingItem itemWithTitle:@"头像文本-修改" key:@"DYYYAvatarTapText" type:DYYYSettingItemTypeTextField placeholder:@"Axs"],
                 [DYYYSettingItem itemWithTitle:@"菜单背景颜色" key:@"DYYYBackgroundColor" type:DYYYSettingItemTypeColorPicker],
                 [DYYYSettingItem itemWithTitle:@"默认倍速" key:@"DYYYDefaultSpeed" type:DYYYSettingItemTypeSpeedPicker placeholder:@"点击选择"],
                 [DYYYSettingItem itemWithTitle:@"倍速按钮-开关" key:@"DYYYEnableFloatSpeedButton" type:DYYYSettingItemTypeSwitch],
@@ -1878,7 +1878,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
             
             // 处理头像文本
             if ([item.key isEqualToString:@"DYYYAvatarTapText"]) {
-                self.avatarTapLabel.text = @"Axs";
+                self.avatarTapLabel.text = @"抖音净化";
             }
             
             // 刷新UI
