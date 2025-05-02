@@ -2053,7 +2053,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
 }
 
 - (void)showSourceCodePopup {
-    NSString *githubURL = @"https://github.com/Axs/DYYY";
+    NSString *githubURL = @"https://github.com/Axs/dytweak";
     
     // 添加跳转前的动画效果
     CAKeyframeAnimation *pulseAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
