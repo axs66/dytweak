@@ -168,7 +168,7 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
     
     self.avatarTapLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 120, self.view.bounds.size.width, 30)];
     NSString *customTapText = [[NSUserDefaults standardUserDefaults] stringForKey:@"DYYYAvatarTapText"];
-    self.avatarTapLabel.text = customTapText.length > 0 ? customTapText : @"pxx917144686";
+    self.avatarTapLabel.text = customTapText.length > 0 ? customTapText : @"Axs";
     self.avatarTapLabel.textAlignment = NSTextAlignmentCenter;
     self.avatarTapLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleTitle3];
     self.avatarTapLabel.textColor = [UIColor systemBlueColor];
@@ -420,7 +420,7 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
     
     // 创建文本标签
     self.footerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, 40)];
-    self.footerLabel.text = @"Developer By @huamidev\nVersion: 2.1-7++ (修改2025-04-04)";
+    self.footerLabel.text = @"Developer By @huamidev\nVersion: 3.0.7(Axs修改2025-05-02)";
     self.footerLabel.textAlignment = NSTextAlignmentCenter;
     self.footerLabel.font = [UIFont systemFontOfSize:14];
     self.footerLabel.textColor = [UIColor secondaryLabelColor];
@@ -1635,7 +1635,7 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
 }
 
 - (void)avatarTextFieldDidChange:(UITextField *)textField {
-    self.avatarTapLabel.text = textField.text.length > 0 ? textField.text : @"pxx917144686";
+    self.avatarTapLabel.text = textField.text.length > 0 ? textField.text : @"Axs";
 }
 
 - (void)headerTapped:(UIButton *)sender {
@@ -1850,7 +1850,7 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
             
             // 处理头像文本
             if ([item.key isEqualToString:@"DYYYAvatarTapText"]) {
-                self.avatarTapLabel.text = @"pxx917144686";
+                self.avatarTapLabel.text = @"Axs";
             }
             
             // 刷新UI
@@ -2014,7 +2014,7 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
     
     // 处理头像文本
     if ([key isEqualToString:@"DYYYAvatarTapText"]) {
-        self.avatarTapLabel.text = @"pxx917144686";
+        self.avatarTapLabel.text = @"Axs";
     }
     
     // 刷新UI
@@ -2025,7 +2025,7 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
 }
 
 - (void)showSourceCodePopup {
-    NSString *githubURL = @"https://github.com/pxx917144686/DYYY";
+    NSString *githubURL = @"https://github.com/Axs/dytweak";
     
     // 添加跳转前的动画效果
     CAKeyframeAnimation *pulseAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
