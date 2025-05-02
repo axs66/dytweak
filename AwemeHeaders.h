@@ -341,7 +341,9 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, assign) BOOL isAppearing;
 @end
 
-@interface DYYYSettingViewController : UIViewController
+// 删除这一行或改成前向声明
+//@interface DYYYSettingViewController : UIViewController
+@class DYYYSettingViewController;
 @end
 
 @interface AWEElementStackView : UIView
