@@ -341,10 +341,15 @@ typedef NS_ENUM(NSInteger, MediaType) {
 @property (nonatomic, assign) BOOL isAppearing;
 @end
 
-// 删除这一行或改成前向声明
-//@interface DYYYSettingViewController : UIViewController
-@class DYYYSettingViewController;
+// 删除这一整段：
+/*
+@interface DYYYSettingViewController : UIViewController
 @end
+*/
+
+// 替换为前向声明：
+@class DYYYSettingViewController;
+
 
 @interface AWEElementStackView : UIView
 @property (nonatomic, copy) NSString *accessibilityLabel;
