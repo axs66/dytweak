@@ -2551,7 +2551,7 @@ static void showUserAgreementAlert() {
 				    @"版本: " DYYY_VERSION_STRING @"\n\n"
 				    @"感谢使用抖音净化\n\n"
 				    @"感谢huami开源\n\n"
-				    @"Telegram @wxfx8\n\n"
+				    @"人妖嘉嘉户口本无人\n\n"
 				    @"开源地址 huami1314/DYYY\n\n",
 				    nil);
 		  };
