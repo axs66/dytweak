@@ -12,7 +12,7 @@ DYYYConstants.h第4~5行#define DYYY_NAME @"DYYY"  #define DYYY_SETTINGS_NAME @"
 DYYYConstants.h第9~10行2.2-4改为3.0.5；DYYYSettingViewController.m第451行2.2-4 (修改2025-04-14)改为3.0.5 (Axs修改2025-05-12)
 
 ## 4.修改署名信息：
-DYYYSettingViewController.m中pxx917144686改为Axs（其中第1888行是头像下方信息：pxx917144686改为抖音净化）
+DYYYSettingViewController.m中pxx917144686改为Axs（其中第1661行是头像下方信息：pxx917144686改为抖音净化）
 
 ## 5.修改仓库信息：
 DYYYSettingViewController.m中第2056行"https://github.com/huami1314/dyyy"改为"https://github.com/Axs/dytweak"
