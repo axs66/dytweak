@@ -292,18 +292,21 @@ static void updateModelData(id model) {
 // NSDictionary的objectForKey: hook
 %hook NSDictionary
 
-// 预先创建key集合，避免每次比较字符串
+// 声明一个静态变量和初始化函数
 static NSSet *keySet = nil;
-static dispatch_once_t onceToken;
-dispatch_once(&onceToken, ^{
-    keySet = [NSSet setWithObjects:
-              @"totalFavorited", @"followerCount", @"followingCount", @"friendCount",
-              @"favoriteCount", @"diggCount", @"praiseCount", @"likeCount", @"like_count",
-              @"fansCount", @"fans_count", @"followCount", @"follow_count", @"mutualFriendCount",
-              @"followFriendCount", @"mutualCount", @"friend_count", @"mutual_friend_count",
-              @"follow_friend_count", @"mutual_count", @"total_favorited", @"favorite_count",
-              @"digg_count", nil];
-});
+
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        keySet = [NSSet setWithObjects:
+                  @"totalFavorited", @"followerCount", @"followingCount", @"friendCount",
+                  @"favoriteCount", @"diggCount", @"praiseCount", @"likeCount", @"like_count",
+                  @"fansCount", @"fans_count", @"followCount", @"follow_count", @"mutualFriendCount",
+                  @"followFriendCount", @"mutualCount", @"friend_count", @"mutual_friend_count",
+                  @"follow_friend_count", @"mutual_count", @"total_favorited", @"favorite_count",
+                  @"digg_count", nil];
+    });
+}
 
 - (id)objectForKey:(id)key {
     id origVal = %orig(key);
@@ -315,6 +318,7 @@ dispatch_once(&onceToken, ^{
         return origVal;
     }
     
+    // 你的伪造数据替换逻辑
     if ([key isEqualToString:@"followerCount"] || [key isEqualToString:@"fansCount"] || [key isEqualToString:@"fans_count"]) {
         return cachedFollowersNumber ?: origVal;
     } else if ([key isEqualToString:@"totalFavorited"] || [key isEqualToString:@"favoriteCount"] || [key isEqualToString:@"diggCount"] || [key isEqualToString:@"praiseCount"] || [key isEqualToString:@"likeCount"] || [key isEqualToString:@"like_count"] || [key isEqualToString:@"total_favorited"] || [key isEqualToString:@"favorite_count"] || [key isEqualToString:@"digg_count"]) {
@@ -329,6 +333,7 @@ dispatch_once(&onceToken, ^{
 }
 
 %end
+
 
 // 配置加载入口
 %ctor {
