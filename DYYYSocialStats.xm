@@ -5,6 +5,7 @@
 
 // 添加完整接口声明
 @interface AWEProfileSocialStatisticView : UIView
+@property (nonatomic, strong) AWEUserModel *user;
 - (void)setFansCount:(NSNumber *)count;
 - (void)setPraiseCount:(NSNumber *)count;
 - (void)setFollowingCount:(NSNumber *)count;
@@ -13,11 +14,12 @@
 @end
 
 @interface AWEProfileHeaderMyProfileViewController : UIViewController
+@property (nonatomic, strong) AWEUserModel *user;
 - (void)reloadSettings;
 @end
 
 @interface AWEProfileHeaderOtherProfileViewController : UIViewController
-- (void)reloadSettings;
+@property (nonatomic, strong) AWEUserModel *user;
 @end
 
 // 控制开关 & 自定义数据持久化
@@ -46,7 +48,7 @@ static NSTimeInterval const socialStatsUpdateInterval = 1.0; // 最小1秒更新
 
 // 函数声明
 static void loadCustomSocialStats(void);
-static void updateModelData(id model);
+static BOOL isCurrentUserModel(id model);
 
 // 加载设置数据
 static void loadCustomSocialStats() {
@@ -66,76 +68,37 @@ static void loadCustomSocialStats() {
     }
 }
 
-// 模型数据更新
-static void updateModelData(id model) {
-    if (!socialStatsEnabled || !model) return;
+// 检查是否是当前用户模型
+static BOOL isCurrentUserModel(id model) {
+    if (!model) return NO;
     
-    // 粉丝
-    if (cachedFollowersNumber) {
-        NSArray *followerKeys = @[@"followerCount", @"fansCount", @"fans_count", @"followersCount"];
-        for (NSString *key in followerKeys) {
-            if ([model respondsToSelector:NSSelectorFromString(key)]) {
-                [model setValue:cachedFollowersNumber forKey:key];
-            }
-        }
+    // 获取当前用户ID
+    NSString *currentUserID = [[DYYYManager sharedManager] currentUserID];
+    if (!currentUserID) return NO;
+    
+    // 检查模型是否包含uid属性
+    if ([model respondsToSelector:@selector(uid)]) {
+        NSString *modelUID = [model valueForKey:@"uid"];
+        return [modelUID isEqualToString:currentUserID];
+    }
+    // 检查模型是否包含userId属性
+    else if ([model respondsToSelector:@selector(userId)]) {
+        NSString *modelUserID = [model valueForKey:@"userId"];
+        return [modelUserID isEqualToString:currentUserID];
     }
     
-    // 获赞
-    if (cachedLikesNumber) {
-        NSArray *likeKeys = @[
-            @"totalFavorited", @"favoriteCount", @"diggCount", 
-            @"praiseCount", @"likeCount", @"like_count",
-            @"total_favorited", @"favorite_count", @"digg_count",
-            @"awemeCount", @"aweme_count", @"videoCount"
-        ];
-        for (NSString *key in likeKeys) {
-            if ([model respondsToSelector:NSSelectorFromString(key)]) {
-                [model setValue:cachedLikesNumber forKey:key];
-            }
-        }
-    }
-    
-    // 关注
-    if (cachedFollowingNumber) {
-        NSArray *followingKeys = @[@"followingCount", @"followCount", @"follow_count", @"followingsCount"];
-        for (NSString *key in followingKeys) {
-            if ([model respondsToSelector:NSSelectorFromString(key)]) {
-                [model setValue:cachedFollowingNumber forKey:key];
-            }
-        }
-    }
-    
-    // 互关
-    if (cachedMutualNumber) {
-        NSArray *mutualKeys = @[
-            @"friendCount", @"mutualFriendCount", @"followFriendCount",
-            @"mutualCount", @"friend_count", @"mutual_friend_count",
-            @"follow_friend_count", @"mutual_count", @"mutualFriendsCount"
-        ];
-        for (NSString *key in mutualKeys) {
-            if ([model respondsToSelector:NSSelectorFromString(key)]) {
-                [model setValue:cachedMutualNumber forKey:key];
-            }
-        }
-    }
+    return NO;
 }
 
 // 数据Hook - 核心用户模型
 %hook AWEUserModel
-- (id)init {
-    id instance = %orig;
-    if (socialStatsEnabled && instance) {
-        updateModelData(instance);
-    }
-    return instance;
-}
 
 - (NSNumber *)followerCount {
-    return socialStatsEnabled && cachedFollowersNumber ? cachedFollowersNumber : %orig;
+    return (socialStatsEnabled && isCurrentUserModel(self) && cachedFollowersNumber) ? cachedFollowersNumber : %orig;
 }
 
 - (void)setFollowerCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowersNumber) {
+    if (socialStatsEnabled && isCurrentUserModel(self) && cachedFollowersNumber) {
         %orig(cachedFollowersNumber);
     } else {
         %orig;
@@ -143,11 +106,11 @@ static void updateModelData(id model) {
 }
 
 - (NSNumber *)followingCount {
-    return socialStatsEnabled && cachedFollowingNumber ? cachedFollowingNumber : %orig;
+    return (socialStatsEnabled && isCurrentUserModel(self) && cachedFollowingNumber) ? cachedFollowingNumber : %orig;
 }
 
 - (void)setFollowingCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowingNumber) {
+    if (socialStatsEnabled && isCurrentUserModel(self) && cachedFollowingNumber) {
         %orig(cachedFollowingNumber);
     } else {
         %orig;
@@ -155,11 +118,11 @@ static void updateModelData(id model) {
 }
 
 - (NSNumber *)totalFavorited {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    return (socialStatsEnabled && isCurrentUserModel(self) && cachedLikesNumber) ? cachedLikesNumber : %orig;
 }
 
 - (void)setTotalFavorited:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
+    if (socialStatsEnabled && isCurrentUserModel(self) && cachedLikesNumber) {
         %orig(cachedLikesNumber);
     } else {
         %orig;
@@ -167,11 +130,11 @@ static void updateModelData(id model) {
 }
 
 - (NSNumber *)diggCount {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    return (socialStatsEnabled && isCurrentUserModel(self) && cachedLikesNumber) ? cachedLikesNumber : %orig;
 }
 
 - (void)setDiggCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
+    if (socialStatsEnabled && isCurrentUserModel(self) && cachedLikesNumber) {
         %orig(cachedLikesNumber);
     } else {
         %orig;
@@ -179,11 +142,11 @@ static void updateModelData(id model) {
 }
 
 - (NSNumber *)likeCount {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    return (socialStatsEnabled && isCurrentUserModel(self) && cachedLikesNumber) ? cachedLikesNumber : %orig;
 }
 
 - (void)setLikeCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
+    if (socialStatsEnabled && isCurrentUserModel(self) && cachedLikesNumber) {
         %orig(cachedLikesNumber);
     } else {
         %orig;
@@ -191,11 +154,11 @@ static void updateModelData(id model) {
 }
 
 - (NSNumber *)friendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    return (socialStatsEnabled && isCurrentUserModel(self) && cachedMutualNumber) ? cachedMutualNumber : %orig;
 }
 
 - (void)setFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
+    if (socialStatsEnabled && isCurrentUserModel(self) && cachedMutualNumber) {
         %orig(cachedMutualNumber);
     } else {
         %orig;
@@ -203,11 +166,11 @@ static void updateModelData(id model) {
 }
 
 - (NSNumber *)mutualFriendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    return (socialStatsEnabled && isCurrentUserModel(self) && cachedMutualNumber) ? cachedMutualNumber : %orig;
 }
 
 - (void)setMutualFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
+    if (socialStatsEnabled && isCurrentUserModel(self) && cachedMutualNumber) {
         %orig(cachedMutualNumber);
     } else {
         %orig;
@@ -215,24 +178,12 @@ static void updateModelData(id model) {
 }
 
 - (NSNumber *)followFriendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    return (socialStatsEnabled && isCurrentUserModel(self) && cachedMutualNumber) ? cachedMutualNumber : %orig;
 }
 
 - (void)setFollowFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
+    if (socialStatsEnabled && isCurrentUserModel(self) && cachedMutualNumber) {
         %orig(cachedMutualNumber);
-    } else {
-        %orig;
-    }
-}
-
-- (NSNumber *)awemeCount {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
-}
-
-- (void)setAwemeCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
-        %orig(cachedLikesNumber);
     } else {
         %orig;
     }
@@ -243,7 +194,8 @@ static void updateModelData(id model) {
 %hook AWEProfileSocialStatisticView
 
 - (void)setFansCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowersNumber) {
+    // 确保视图关联的用户是当前用户
+    if (socialStatsEnabled && self.user && isCurrentUserModel(self.user) && cachedFollowersNumber) {
         %orig(cachedFollowersNumber);
     } else {
         %orig;
@@ -251,7 +203,7 @@ static void updateModelData(id model) {
 }
 
 - (void)setPraiseCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
+    if (socialStatsEnabled && self.user && isCurrentUserModel(self.user) && cachedLikesNumber) {
         %orig(cachedLikesNumber);
     } else {
         %orig;
@@ -259,7 +211,7 @@ static void updateModelData(id model) {
 }
 
 - (void)setFollowingCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowingNumber) {
+    if (socialStatsEnabled && self.user && isCurrentUserModel(self.user) && cachedFollowingNumber) {
         %orig(cachedFollowingNumber);
     } else {
         %orig;
@@ -267,7 +219,7 @@ static void updateModelData(id model) {
 }
 
 - (void)setFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
+    if (socialStatsEnabled && self.user && isCurrentUserModel(self.user) && cachedMutualNumber) {
         %orig(cachedMutualNumber);
     } else {
         %orig;
@@ -284,21 +236,32 @@ static void updateModelData(id model) {
     
     %orig;
     
-    if (socialStatsEnabled) {
+    // 只有在当前用户的视图上才应用自定义值
+    if (socialStatsEnabled && self.user && isCurrentUserModel(self.user)) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (socialStatsEnabled) {
-                [self setFansCount:cachedFollowersNumber];
-                [self setPraiseCount:cachedLikesNumber];
-                [self setFollowingCount:cachedFollowingNumber];
-                [self setFriendCount:cachedMutualNumber];
-            }
+            [self setFansCount:cachedFollowersNumber];
+            [self setPraiseCount:cachedLikesNumber];
+            [self setFollowingCount:cachedFollowingNumber];
+            [self setFriendCount:cachedMutualNumber];
         });
     }
 }
 
-- (void)layoutSubviews {
+%end
+
+// 个人主页控制器
+%hook AWEProfileHeaderMyProfileViewController
+
+- (void)reloadSettings {
     %orig;
-    [self p_updateSocialStatisticContent:YES];
+    
+    // 确保刷新当前用户的数据
+    if (socialStatsEnabled && self.user && isCurrentUserModel(self.user)) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            // 强制刷新统计数据
+            [self reloadSettings];
+        });
+    }
 }
 
 %end
@@ -306,61 +269,17 @@ static void updateModelData(id model) {
 // 其他用户主页控制器
 %hook AWEProfileHeaderOtherProfileViewController
 
-- (void)reloadSettings {
+- (void)viewDidLoad {
     %orig;
     
-    if (socialStatsEnabled) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            // 强制刷新统计数据
-            [self performSelector:@selector(reloadSettings)];
-        });
+    // 确保其他用户的数据不被修改
+    if (socialStatsEnabled && self.user && !isCurrentUserModel(self.user)) {
+        // 强制刷新显示真实数据
+        [self.user setFollowerCount:%orig(self.user.followerCount)];
+        [self.user setFollowingCount:%orig(self.user.followingCount)];
+        [self.user setTotalFavorited:%orig(self.user.totalFavorited)];
+        [self.user setFriendCount:%orig(self.user.friendCount)];
     }
-}
-
-%end
-
-// NSDictionary的objectForKey: hook
-%hook NSDictionary
-
-// 声明一个静态变量和初始化函数
-static NSSet *keySet = nil;
-
-+ (void)initialize {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        keySet = [NSSet setWithObjects:
-                  @"totalFavorited", @"followerCount", @"followingCount", @"friendCount",
-                  @"favoriteCount", @"diggCount", @"praiseCount", @"likeCount", @"like_count",
-                  @"fansCount", @"fans_count", @"followCount", @"follow_count", @"mutualFriendCount",
-                  @"followFriendCount", @"mutualCount", @"friend_count", @"mutual_friend_count",
-                  @"follow_friend_count", @"mutual_count", @"total_favorited", @"favorite_count",
-                  @"digg_count", @"awemeCount", @"aweme_count", @"videoCount", @"followersCount",
-                  @"followingsCount", @"mutualFriendsCount", nil];
-    });
-}
-
-- (id)objectForKey:(id)key {
-    id origVal = %orig(key);
-    if (!socialStatsEnabled || !key || ![key isKindOfClass:[NSString class]]) {
-        return origVal;
-    }
-    
-    if (![keySet containsObject:key]) {
-        return origVal;
-    }
-    
-    // 伪造数据替换逻辑
-    if ([key isEqualToString:@"followerCount"] || [key isEqualToString:@"fansCount"] || [key isEqualToString:@"fans_count"] || [key isEqualToString:@"followersCount"]) {
-        return cachedFollowersNumber ?: origVal;
-    } else if ([key isEqualToString:@"totalFavorited"] || [key isEqualToString:@"favoriteCount"] || [key isEqualToString:@"diggCount"] || [key isEqualToString:@"praiseCount"] || [key isEqualToString:@"likeCount"] || [key isEqualToString:@"like_count"] || [key isEqualToString:@"total_favorited"] || [key isEqualToString:@"favorite_count"] || [key isEqualToString:@"digg_count"] || [key isEqualToString:@"awemeCount"] || [key isEqualToString:@"aweme_count"] || [key isEqualToString:@"videoCount"]) {
-        return cachedLikesNumber ?: origVal;
-    } else if ([key isEqualToString:@"followingCount"] || [key isEqualToString:@"followCount"] || [key isEqualToString:@"follow_count"] || [key isEqualToString:@"followingsCount"]) {
-        return cachedFollowingNumber ?: origVal;
-    } else if ([key isEqualToString:@"friendCount"] || [key isEqualToString:@"mutualFriendCount"] || [key isEqualToString:@"followFriendCount"] || [key isEqualToString:@"mutualCount"] || [key isEqualToString:@"friend_count"] || [key isEqualToString:@"mutual_friend_count"] || [key isEqualToString:@"follow_friend_count"] || [key isEqualToString:@"mutual_count"] || [key isEqualToString:@"mutualFriendsCount"]) {
-        return cachedMutualNumber ?: origVal;
-    }
-    
-    return origVal;
 }
 
 %end
