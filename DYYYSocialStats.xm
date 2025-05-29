@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import <objc/message.h>
 #import "AwemeHeaders.h"
 #import "DYYYManager.h"
 
