@@ -6,7 +6,7 @@
 #define DYYY_SETTINGS_NAME @"抖音净化设置"
 
 // 版本信息
-#define DYYY_VERSION @"3.0.5"
-#define DYYY_VERSION_STRING @"v3.0.5"
+#define DYYY_VERSION @"3.0.6"
+#define DYYY_VERSION_STRING @"v3.0.6"
 
 #endif
