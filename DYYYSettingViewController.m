@@ -426,13 +426,6 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
                 [DYYYSettingItem itemWithTitle:@"  -接口解析" key:@"DYYYDoubleInterfaceDownload" type:DYYYSettingItemTypeSwitch]
             ],
             @[
-                [DYYYSettingItem itemWithTitle:@"自定义功能开关" key:@"DYYYEnableSocialStatsCustom" type:DYYYSettingItemTypeSwitch],
-                [DYYYSettingItem itemWithTitle:@"  -粉丝数量" key:@"DYYYCustomFollowers" type:DYYYSettingItemTypeTextField placeholder:@"填写数字"],
-                [DYYYSettingItem itemWithTitle:@"  -获赞数量" key:@"DYYYCustomLikes" type:DYYYSettingItemTypeTextField placeholder:@"填写数字"],
-                [DYYYSettingItem itemWithTitle:@"  -关注数量" key:@"DYYYCustomFollowing" type:DYYYSettingItemTypeTextField placeholder:@"填写数字"],
-                [DYYYSettingItem itemWithTitle:@"  -互关数量" key:@"DYYYCustomMutual" type:DYYYSettingItemTypeTextField placeholder:@"填写数字"]
-            ],
-            @[
                 [DYYYSettingItem itemWithTitle:@"启用快捷倍速按钮" key:@"DYYYEnableFloatSpeedButton" type:DYYYSettingItemTypeSwitch],
                 [DYYYSettingItem itemWithTitle:@"快捷倍速数值设置" key:@"DYYYSpeedSettings" type:DYYYSettingItemTypeTextField placeholder:@"逗号分隔"],
                 [DYYYSettingItem itemWithTitle:@"自动恢复默认倍速" key:@"DYYYAutoRestoreSpeed" type:DYYYSettingItemTypeSwitch],
@@ -456,7 +449,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
 }
 
 - (void)setupSectionTitles {
-    self.sectionTitles = [@[@"基本设置", @"界面设置", @"隐藏设置", @"顶栏移除", @"增强设置", @"伪装数据", @"悬浮按钮"] mutableCopy];
+    self.sectionTitles = [@[@"基本设置", @"界面设置", @"隐藏设置", @"顶栏移除", @"增强设置", @"悬浮按钮"] mutableCopy];
     self.filteredSectionTitles = [self.sectionTitles mutableCopy];
 }
 
