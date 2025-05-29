@@ -42,7 +42,7 @@ static NSTimeInterval const socialStatsUpdateInterval = 1.0; // 最小1秒更新
 
 // 函数声明
 static void loadCustomSocialStats(void);
-static void updateModelData(id model);
+static void updateModelDataIfMine(id model);
 
 // 加载设置数据
 static void loadCustomSocialStats() {
@@ -62,9 +62,21 @@ static void loadCustomSocialStats() {
     }
 }
 
-// 模型数据更新
-static void updateModelData(id model) {
+// 判断是否是自己主页，只有自己主页才替换数据
+static BOOL isMyProfile(id model) {
+    // 这里示范用 model 的一个属性判断，具体按你的模型修改
+    if ([model respondsToSelector:NSSelectorFromString(@"isMyProfile")]) {
+        BOOL myProfile = ((BOOL (*)(id, SEL))objc_msgSend)(model, NSSelectorFromString(@"isMyProfile"));
+        return myProfile;
+    }
+    // 如果没有该属性，返回NO，避免误替换别人数据
+    return NO;
+}
+
+// 模型数据更新（仅替换自己主页数据）
+static void updateModelDataIfMine(id model) {
     if (!socialStatsEnabled || !model) return;
+    if (!isMyProfile(model)) return;  // 不是自己主页则不替换
     
     // 粉丝
     if (cachedFollowersNumber) {
@@ -79,7 +91,7 @@ static void updateModelData(id model) {
     // 获赞
     if (cachedLikesNumber) {
         NSArray *likeKeys = @[
-            @"totalFavorited", @"favoriteCount", @"diggCount", 
+            @"totalFavorited", @"favoriteCount", @"diggCount",
             @"praiseCount", @"likeCount", @"like_count",
             @"total_favorited", @"favorite_count", @"digg_count"
         ];
@@ -120,104 +132,128 @@ static void updateModelData(id model) {
 - (id)init {
     id instance = %orig;
     if (socialStatsEnabled && instance) {
-        updateModelData(instance);
+        updateModelDataIfMine(instance);
     }
     return instance;
 }
 
 - (NSNumber *)followerCount {
-    return socialStatsEnabled && cachedFollowersNumber ? cachedFollowersNumber : %orig;
+    if (socialStatsEnabled && cachedFollowersNumber && isMyProfile(self)) {
+        return cachedFollowersNumber;
+    }
+    return %orig;
 }
 
 - (void)setFollowerCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowersNumber) {
+    if (socialStatsEnabled && cachedFollowersNumber && isMyProfile(self)) {
         %orig(cachedFollowersNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (NSNumber *)followingCount {
-    return socialStatsEnabled && cachedFollowingNumber ? cachedFollowingNumber : %orig;
+    if (socialStatsEnabled && cachedFollowingNumber && isMyProfile(self)) {
+        return cachedFollowingNumber;
+    }
+    return %orig;
 }
 
 - (void)setFollowingCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowingNumber) {
+    if (socialStatsEnabled && cachedFollowingNumber && isMyProfile(self)) {
         %orig(cachedFollowingNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (NSNumber *)totalFavorited {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    if (socialStatsEnabled && cachedLikesNumber && isMyProfile(self)) {
+        return cachedLikesNumber;
+    }
+    return %orig;
 }
 
 - (void)setTotalFavorited:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
+    if (socialStatsEnabled && cachedLikesNumber && isMyProfile(self)) {
         %orig(cachedLikesNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (NSNumber *)diggCount {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    if (socialStatsEnabled && cachedLikesNumber && isMyProfile(self)) {
+        return cachedLikesNumber;
+    }
+    return %orig;
 }
 
 - (void)setDiggCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
+    if (socialStatsEnabled && cachedLikesNumber && isMyProfile(self)) {
         %orig(cachedLikesNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (NSNumber *)likeCount {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    if (socialStatsEnabled && cachedLikesNumber && isMyProfile(self)) {
+        return cachedLikesNumber;
+    }
+    return %orig;
 }
 
 - (void)setLikeCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
+    if (socialStatsEnabled && cachedLikesNumber && isMyProfile(self)) {
         %orig(cachedLikesNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (NSNumber *)friendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    if (socialStatsEnabled && cachedMutualNumber && isMyProfile(self)) {
+        return cachedMutualNumber;
+    }
+    return %orig;
 }
 
 - (void)setFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
+    if (socialStatsEnabled && cachedMutualNumber && isMyProfile(self)) {
         %orig(cachedMutualNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (NSNumber *)mutualFriendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    if (socialStatsEnabled && cachedMutualNumber && isMyProfile(self)) {
+        return cachedMutualNumber;
+    }
+    return %orig;
 }
 
 - (void)setMutualFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
+    if (socialStatsEnabled && cachedMutualNumber && isMyProfile(self)) {
         %orig(cachedMutualNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (NSNumber *)followFriendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    if (socialStatsEnabled && cachedMutualNumber && isMyProfile(self)) {
+        return cachedMutualNumber;
+    }
+    return %orig;
 }
 
 - (void)setFollowFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
+    if (socialStatsEnabled && cachedMutualNumber && isMyProfile(self)) {
         %orig(cachedMutualNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 %end
@@ -226,34 +262,34 @@ static void updateModelData(id model) {
 %hook AWEProfileSocialStatisticView
 
 - (void)setFansCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowersNumber) {
+    if (socialStatsEnabled && cachedFollowersNumber && isMyProfile(self)) {
         %orig(cachedFollowersNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (void)setPraiseCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
+    if (socialStatsEnabled && cachedLikesNumber && isMyProfile(self)) {
         %orig(cachedLikesNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (void)setFollowingCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowingNumber) {
+    if (socialStatsEnabled && cachedFollowingNumber && isMyProfile(self)) {
         %orig(cachedFollowingNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
 - (void)setFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
+    if (socialStatsEnabled && cachedMutualNumber && isMyProfile(self)) {
         %orig(cachedMutualNumber);
     } else {
-        %orig;
+        %orig(count);
     }
 }
 
@@ -261,14 +297,13 @@ static void updateModelData(id model) {
 - (void)p_updateSocialStatisticContent:(BOOL)animated {
     NSTimeInterval now = CACurrentMediaTime();
     if (now - lastSocialStatsUpdateTime < socialStatsUpdateInterval) {
-        // 小于1秒内，跳过重复更新
         return;
     }
     lastSocialStatsUpdateTime = now;
     
     %orig;
     
-    if (socialStatsEnabled) {
+    if (socialStatsEnabled && isMyProfile(self)) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             if (socialStatsEnabled) {
                 [self setFansCount:cachedFollowersNumber];
@@ -283,7 +318,6 @@ static void updateModelData(id model) {
 // 优化取消 layoutSubviews 中重复调用，改为仅调用一次更新
 - (void)layoutSubviews {
     %orig;
-    // 取消dispatch_async调用，避免重复更新
     [self p_updateSocialStatisticContent:YES];
 }
 
@@ -318,15 +352,25 @@ static NSSet *keySet = nil;
         return origVal;
     }
     
-    // 你的伪造数据替换逻辑
+    // 只有“我的主页”才替换，判断方式需要根据上下文调整
+    // 这里没上下文判断，只简单示范
+    // 建议结合调用堆栈、对象上下文判断
+    
     if ([key isEqualToString:@"followerCount"] || [key isEqualToString:@"fansCount"] || [key isEqualToString:@"fans_count"]) {
-        return cachedFollowersNumber ?: origVal;
-    } else if ([key isEqualToString:@"totalFavorited"] || [key isEqualToString:@"favoriteCount"] || [key isEqualToString:@"diggCount"] || [key isEqualToString:@"praiseCount"] || [key isEqualToString:@"likeCount"] || [key isEqualToString:@"like_count"] || [key isEqualToString:@"total_favorited"] || [key isEqualToString:@"favorite_count"] || [key isEqualToString:@"digg_count"]) {
-        return cachedLikesNumber ?: origVal;
-    } else if ([key isEqualToString:@"followingCount"] || [key isEqualToString:@"followCount"] || [key isEqualToString:@"follow_count"]) {
-        return cachedFollowingNumber ?: origVal;
-    } else if ([key isEqualToString:@"friendCount"] || [key isEqualToString:@"mutualFriendCount"] || [key isEqualToString:@"followFriendCount"] || [key isEqualToString:@"mutualCount"] || [key isEqualToString:@"friend_count"] || [key isEqualToString:@"mutual_friend_count"] || [key isEqualToString:@"follow_friend_count"] || [key isEqualToString:@"mutual_count"]) {
-        return cachedMutualNumber ?: origVal;
+        if (cachedFollowersNumber) return cachedFollowersNumber;
+    }
+    if ([key isEqualToString:@"totalFavorited"] || [key isEqualToString:@"favoriteCount"] || [key isEqualToString:@"diggCount"] ||
+        [key isEqualToString:@"praiseCount"] || [key isEqualToString:@"likeCount"] || [key isEqualToString:@"like_count"] ||
+        [key isEqualToString:@"total_favorited"] || [key isEqualToString:@"favorite_count"] || [key isEqualToString:@"digg_count"]) {
+        if (cachedLikesNumber) return cachedLikesNumber;
+    }
+    if ([key isEqualToString:@"followingCount"] || [key isEqualToString:@"followCount"] || [key isEqualToString:@"follow_count"]) {
+        if (cachedFollowingNumber) return cachedFollowingNumber;
+    }
+    if ([key isEqualToString:@"friendCount"] || [key isEqualToString:@"mutualFriendCount"] || [key isEqualToString:@"followFriendCount"] ||
+        [key isEqualToString:@"mutualCount"] || [key isEqualToString:@"friend_count"] || [key isEqualToString:@"mutual_friend_count"] ||
+        [key isEqualToString:@"follow_friend_count"] || [key isEqualToString:@"mutual_count"]) {
+        if (cachedMutualNumber) return cachedMutualNumber;
     }
     
     return origVal;
@@ -334,8 +378,16 @@ static NSSet *keySet = nil;
 
 %end
 
+// Hook控制器reloadSettings刷新界面数据，强制刷新数据
+%hook AWEProfileHeaderMyProfileViewController
 
-// 配置加载入口
-%ctor {
+- (void)reloadSettings {
+    loadCustomSocialStats();
+    %orig;
+}
+%end
+
+// 在插件加载时读取设置
+__attribute__((constructor)) static void initSocialStatsReplacement() {
     loadCustomSocialStats();
 }
