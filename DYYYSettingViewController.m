@@ -456,7 +456,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
 }
 
 - (void)setupSectionTitles {
-    self.sectionTitles = [@[@"基本设置", @"界面设置", @"隐藏设置", @"顶栏移除", @"增强设置", @"悬浮按钮"] mutableCopy];
+    self.sectionTitles = [@[@"基本设置", @"界面设置", @"隐藏设置", @"顶栏移除", @"增强设置", @"伪装数据", @"悬浮按钮"] mutableCopy];
     self.filteredSectionTitles = [self.sectionTitles mutableCopy];
 }
 
