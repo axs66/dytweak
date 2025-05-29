@@ -8,6 +8,26 @@
 #import "AwemeHeaders.h"
 #import "DYYYManager.h"
 
+// 添加分类声明，避免编译器报错
+@interface AWEUserModel (DYYYSocialStats)
+- (BOOL)isCurrentUser;
+@end
+
+// 更安全的 override 宏，避免方法重定义
+#define DYYY_OVERRIDE_NUMBER_PROPERTY(NAME, SETTER, CACHED_NAME) \
+static NSNumber * _logos_method$_ungrouped$AWEUserModel$getter_##NAME(_LOGOS_SELF_TYPE_NORMAL AWEUserModel* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd) { \
+    NSNumber *cached = CACHED_NAME; \
+    return socialStatsEnabled && [self respondsToSelector:@selector(isCurrentUser)] && [self isCurrentUser] && cached ? cached : _logos_orig$_ungrouped$AWEUserModel$getter(self, _cmd); \
+} \
+\
+static void _logos_method$_ungrouped$AWEUserModel$setter_##NAME(_LOGOS_SELF_TYPE_NORMAL AWEUserModel* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, NSNumber * count) { \
+    if (socialStatsEnabled && [self respondsToSelector:@selector(isCurrentUser)] && [self isCurrentUser]) { \
+        CACHED_NAME = count; \
+    } \
+    _logos_orig$_ungrouped$AWEUserModel$setter(self, _cmd, count); \
+}
+
+
 @interface AWEProfileSocialStatisticView : UIView
 - (void)setFansCount:(NSNumber *)count;
 - (void)setPraiseCount:(NSNumber *)count;
