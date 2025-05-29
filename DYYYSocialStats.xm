@@ -23,7 +23,15 @@ static void setter_##PROPERTY(_LOGOS_SELF_TYPE_NORMAL AWEUserModel* _LOGOS_SELF_
 } \
 %property (nonatomic, strong) NSNumber * PROPERTY; \
 %getter(getter_##PROPERTY) \
-%setter(setter_##PROPERTY) \
+%setter(setter_##PROPERTY)
+
+%hook AWEUserModel
+
+DYYY_OVERRIDE_NUMBER_PROPERTY(followerCount, setFollowerCount, cachedFollowersNumber)
+DYYY_OVERRIDE_NUMBER_PROPERTY(followingCount, setFollowingCount, cachedFollowingNumber)
+
+%end
+
 
 
 
