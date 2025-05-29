@@ -466,7 +466,7 @@ typedef NS_ENUM(NSInteger, DYYYButtonSize) {
     
     // 创建文本标签
     self.footerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, 40)];
-    self.footerLabel.text = @"Developer By @huamidev\nVersion: 3.0.5 (Axs修改2025-05-12)";
+    self.footerLabel.text = @"Developer By @huamidev\nVersion: 3.0.6 (Axs修改2025-05-12)";
     self.footerLabel.textAlignment = NSTextAlignmentCenter;
     self.footerLabel.font = [UIFont systemFontOfSize:14];
     self.footerLabel.textColor = [UIColor secondaryLabelColor];
