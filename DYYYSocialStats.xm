@@ -4,6 +4,7 @@
 **/
 
 #import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 #import "AwemeHeaders.h"
 #import "DYYYManager.h"
@@ -13,24 +14,25 @@
 - (BOOL)isCurrentUser;
 @end
 
-// 更安全的 override 宏，避免方法重定义
-#define DYYY_OVERRIDE_NUMBER_PROPERTY(PROPERTY, SETTER, CACHEKEY) \
-static NSNumber * getter_##PROPERTY(_LOGOS_SELF_TYPE_NORMAL AWEUserModel* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd) { \
-    return @(self.CACHEKEY); \
-} \
-static void setter_##PROPERTY(_LOGOS_SELF_TYPE_NORMAL AWEUserModel* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, NSNumber * count) { \
-    objc_setAssociatedObject(self, @selector(PROPERTY), count, OBJC_ASSOCIATION_RETAIN_NONATOMIC); \
-} \
-%property (nonatomic, strong) NSNumber * PROPERTY; \
-%getter(getter_##PROPERTY) \
-%setter(setter_##PROPERTY)
 
+// 宏定义，注意不要使用 Logos 的 %property 等语法，统一用标准 Objective-C 写法
+#define DYYY_OVERRIDE_NUMBER_PROPERTY(PROPERTY_NAME, CACHE_KEY) \
+- (NSNumber *)PROPERTY_NAME { \
+    return @(self.CACHE_KEY); \
+} \
+- (void)set##PROPERTY_NAME:(NSNumber *)count { \
+    objc_setAssociatedObject(self, @selector(PROPERTY_NAME), count, OBJC_ASSOCIATION_RETAIN_NONATOMIC); \
+}
+
+// 注意 hook 的类名必须与目标类完全一致（这里以 AWEUserModel 为例）
 %hook AWEUserModel
 
-DYYY_OVERRIDE_NUMBER_PROPERTY(followerCount, setFollowerCount, cachedFollowersNumber)
-DYYY_OVERRIDE_NUMBER_PROPERTY(followingCount, setFollowingCount, cachedFollowingNumber)
+// 替换 followerCount 和 followingCount 的 getter/setter
+DYYY_OVERRIDE_NUMBER_PROPERTY(followerCount, cachedFollowersNumber)
+DYYY_OVERRIDE_NUMBER_PROPERTY(followingCount, cachedFollowingNumber)
 
 %end
+
 
 
 
