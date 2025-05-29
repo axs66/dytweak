@@ -39,7 +39,7 @@ TWEAK_NAME = dytweak
 dytweak_LIBRARY_SEARCH_PATHS = $(THEOS_PROJECT_DIR)/libs
 dytweak_HEADER_SEARCH_PATHS = $(THEOS_PROJECT_DIR)/libs/include
 
-dytweak_FILES = DYYY.xm DYYYHide.xm DYYYFloatClearButton.xm DYYYFloatSpeedButton.xm DYYYSettings.xm DYYYABTestHook.xm DYYYLongPressPanel.xm DYYYSaveMedia.xm DYYYDoubleClickMenu.xm DYYYSocialStats.xm DYYYSettingViewController.m DYYYBottomAlertView.m DYYYCustomInputView.m DYYYOptionsSelectionView.m DYYYIconOptionsDialogView.m DYYYAboutDialogView.m DYYYKeywordListView.m DYYYFilterSettingsView.m DYYYManager.m DYYYUtils.m CityManager.m
+dytweak_FILES = DYYY.xm DYYYHide.xm DYYYFloatClearButton.xm DYYYFloatSpeedButton.xm DYYYSettings.xm DYYYABTestHook.xm DYYYLongPressPanel.xm DYYYSaveMedia.xm DYYYDoubleClickMenu.xm DYYYSettingViewController.m DYYYBottomAlertView.m DYYYCustomInputView.m DYYYOptionsSelectionView.m DYYYIconOptionsDialogView.m DYYYAboutDialogView.m DYYYKeywordListView.m DYYYFilterSettingsView.m DYYYManager.m DYYYUtils.m CityManager.m
 dytweak_CFLAGS = -fobjc-arc -w -I$(dytweak_HEADER_SEARCH_PATHS)
 dytweak_LDFLAGS = -L$(dytweak_LIBRARY_SEARCH_PATHS) -lwebp -weak_framework AVFAudio
 dytweak_FRAMEWORKS = CoreAudio
