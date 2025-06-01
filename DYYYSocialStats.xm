@@ -1,8 +1,3 @@
-/***
-* 2025052801200
-* pxx917144686
-**/
-
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import "AwemeHeaders.h"
@@ -41,9 +36,9 @@ static NSNumber *cachedLikesNumber = nil;
 static NSNumber *cachedFollowingNumber = nil;
 static NSNumber *cachedMutualNumber = nil;
 
-// 防止重复更新
-static BOOL isUpdatingViews = NO;
-static NSTimeInterval lastUpdateTimestamp = 0;
+// 防止重复更新（节流控制）
+static NSTimeInterval lastSocialStatsUpdateTime = 0;
+static NSTimeInterval const socialStatsUpdateInterval = 1.0; // 最小1秒更新间隔
 
 // 函数声明
 static void loadCustomSocialStats(void);
@@ -229,6 +224,7 @@ static void updateModelData(id model) {
 
 // 统计视图
 %hook AWEProfileSocialStatisticView
+
 - (void)setFansCount:(NSNumber *)count {
     if (socialStatsEnabled && cachedFollowersNumber) {
         %orig(cachedFollowersNumber);
@@ -261,134 +257,85 @@ static void updateModelData(id model) {
     }
 }
 
+// 节流处理，控制更新频率
 - (void)p_updateSocialStatisticContent:(BOOL)animated {
+    NSTimeInterval now = CACurrentMediaTime();
+    if (now - lastSocialStatsUpdateTime < socialStatsUpdateInterval) {
+        // 小于1秒内，跳过重复更新
+        return;
+    }
+    lastSocialStatsUpdateTime = now;
+    
     %orig;
+    
     if (socialStatsEnabled) {
-        // 强制二次更新
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (cachedFollowersNumber) [self setFansCount:cachedFollowersNumber];
-            if (cachedLikesNumber) [self setPraiseCount:cachedLikesNumber];
-            if (cachedFollowingNumber) [self setFollowingCount:cachedFollowingNumber];
-            if (cachedMutualNumber) [self setFriendCount:cachedMutualNumber];
+            if (socialStatsEnabled) {
+                [self setFansCount:cachedFollowersNumber];
+                [self setPraiseCount:cachedLikesNumber];
+                [self setFollowingCount:cachedFollowingNumber];
+                [self setFriendCount:cachedMutualNumber];
+            }
         });
     }
 }
 
+// 优化取消 layoutSubviews 中重复调用，改为仅调用一次更新
 - (void)layoutSubviews {
     %orig;
-    if (socialStatsEnabled) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (cachedFollowersNumber) [self setFansCount:cachedFollowersNumber];
-            if (cachedLikesNumber) [self setPraiseCount:cachedLikesNumber];
-            if (cachedFollowingNumber) [self setFollowingCount:cachedFollowingNumber];
-            if (cachedMutualNumber) [self setFriendCount:cachedMutualNumber];
-            [self p_updateSocialStatisticContent:YES];
-        });
-    }
+    // 取消dispatch_async调用，避免重复更新
+    [self p_updateSocialStatisticContent:YES];
 }
+
 %end
 
-// 字典数据源
+// NSDictionary的objectForKey: hook
 %hook NSDictionary
-- (id)objectForKey:(id)aKey {
-    id originalValue = %orig;
-    if (!socialStatsEnabled || !aKey || !originalValue || ![aKey isKindOfClass:[NSString class]]) {
-        return originalValue;
-    }
-    
-    NSString *keyString = (NSString *)aKey;
-    
-    // 粉丝
-    if (cachedFollowersNumber && 
-        ([keyString isEqualToString:@"follower_count"] ||
-         [keyString isEqualToString:@"fans_count"] ||
-         [keyString isEqualToString:@"follower"] ||
-         [keyString isEqualToString:@"fans"])) {
-        if ([originalValue isKindOfClass:[NSNumber class]]) {
-            return cachedFollowersNumber;
-        }
-    }
-    
-    // 获赞
-    if (cachedLikesNumber && 
-        ([keyString isEqualToString:@"total_favorited"] ||
-         [keyString isEqualToString:@"favorite_count"] ||
-         [keyString isEqualToString:@"digg_count"] ||
-         [keyString isEqualToString:@"like_count"] ||
-         [keyString isEqualToString:@"praise_count"])) {
-        if ([originalValue isKindOfClass:[NSNumber class]]) {
-            return cachedLikesNumber;
-        }
-    }
-    
-    // 关注
-    if (cachedFollowingNumber && 
-        ([keyString isEqualToString:@"following_count"] ||
-         [keyString isEqualToString:@"follow_count"] ||
-         [keyString isEqualToString:@"following"] ||
-         [keyString isEqualToString:@"follow"])) {
-        if ([originalValue isKindOfClass:[NSNumber class]]) {
-            return cachedFollowingNumber;
-        }
-    }
-    
-    // 互关
-    if (cachedMutualNumber && 
-        ([keyString isEqualToString:@"friend_count"] ||
-         [keyString isEqualToString:@"mutual_friend_count"] ||
-         [keyString isEqualToString:@"mutual_count"] ||
-         [keyString isEqualToString:@"friendship_count"])) {
-        if ([originalValue isKindOfClass:[NSNumber class]]) {
-            return cachedMutualNumber;
-        }
-    }
-    
-    return originalValue;
+
+// 声明一个静态变量和初始化函数
+static NSSet *keySet = nil;
+
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        keySet = [NSSet setWithObjects:
+                  @"totalFavorited", @"followerCount", @"followingCount", @"friendCount",
+                  @"favoriteCount", @"diggCount", @"praiseCount", @"likeCount", @"like_count",
+                  @"fansCount", @"fans_count", @"followCount", @"follow_count", @"mutualFriendCount",
+                  @"followFriendCount", @"mutualCount", @"friend_count", @"mutual_friend_count",
+                  @"follow_friend_count", @"mutual_count", @"total_favorited", @"favorite_count",
+                  @"digg_count", nil];
+    });
 }
+
+- (id)objectForKey:(id)key {
+    id origVal = %orig(key);
+    if (!socialStatsEnabled || !key || ![key isKindOfClass:[NSString class]]) {
+        return origVal;
+    }
+    
+    if (![keySet containsObject:key]) {
+        return origVal;
+    }
+    
+    // 你的伪造数据替换逻辑
+    if ([key isEqualToString:@"followerCount"] || [key isEqualToString:@"fansCount"] || [key isEqualToString:@"fans_count"]) {
+        return cachedFollowersNumber ?: origVal;
+    } else if ([key isEqualToString:@"totalFavorited"] || [key isEqualToString:@"favoriteCount"] || [key isEqualToString:@"diggCount"] || [key isEqualToString:@"praiseCount"] || [key isEqualToString:@"likeCount"] || [key isEqualToString:@"like_count"] || [key isEqualToString:@"total_favorited"] || [key isEqualToString:@"favorite_count"] || [key isEqualToString:@"digg_count"]) {
+        return cachedLikesNumber ?: origVal;
+    } else if ([key isEqualToString:@"followingCount"] || [key isEqualToString:@"followCount"] || [key isEqualToString:@"follow_count"]) {
+        return cachedFollowingNumber ?: origVal;
+    } else if ([key isEqualToString:@"friendCount"] || [key isEqualToString:@"mutualFriendCount"] || [key isEqualToString:@"followFriendCount"] || [key isEqualToString:@"mutualCount"] || [key isEqualToString:@"friend_count"] || [key isEqualToString:@"mutual_friend_count"] || [key isEqualToString:@"follow_friend_count"] || [key isEqualToString:@"mutual_count"]) {
+        return cachedMutualNumber ?: origVal;
+    }
+    
+    return origVal;
+}
+
 %end
 
-// 通用生命周期Hook
-%hook AWEProfileHeaderMyProfileViewController
-- (void)viewDidLoad {
-    %orig;
-    
-    // 监听设置变化
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(reloadSettings)
-                                                 name:NSUserDefaultsDidChangeNotification
-                                               object:nil];
-}
 
-- (void)viewWillAppear:(BOOL)animated {
-    %orig;
-    
-    // 每次进入页面刷新数据
-    loadCustomSocialStats();
-}
-
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    %orig;
-}
-
-%new
-- (void)reloadSettings {
-    loadCustomSocialStats();
-}
-%end
-
-%hook NSUserDefaults
-- (void)setObject:(id)value forKey:(NSString *)defaultName {
-    %orig;
-    if ([defaultName hasPrefix:@"DYYYCustom"]) {
-        // 当自定义数据变化时，重新加载
-        dispatch_async(dispatch_get_main_queue(), ^{
-            loadCustomSocialStats();
-        });
-    }
-}
-%end
-
+// 配置加载入口
 %ctor {
     loadCustomSocialStats();
 }
