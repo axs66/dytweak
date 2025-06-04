@@ -8,8 +8,11 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <signal.h>
+#import "DYYYFloatSpeedButton.h"
 // 添加变量跟踪是否在目标视图控制器中
 static BOOL isInPlayInteractionVC = NO;
+// 添加变量跟踪评论界面是否可见
+static BOOL isCommentViewVisible = NO;
 // HideUIButton 接口声明
 @interface HideUIButton : UIButton
 // 状态属性
@@ -44,6 +47,11 @@ static BOOL isInPlayInteractionVC = NO;
 static HideUIButton *hideButton;
 static BOOL isAppInTransition = NO;
 static NSArray *targetClassNames;
+static CGFloat DYGetGlobalAlpha(void) {
+    NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:@"DYYYGlobalTransparency"];
+    CGFloat a = value.length ? value.floatValue : 1.0;
+    return (a >= 0.0 && a <= 1.0) ? a : 1.0;
+}
 static void findViewsOfClassHelper(UIView *view, Class viewClass, NSMutableArray *result) {
 	if ([view isKindOfClass:viewClass]) {
 		[result addObject:view];
@@ -66,6 +74,7 @@ static void forceResetAllUIElements(void) {
 	UIWindow *window = getKeyWindow();
 	if (!window)
 		return;
+	Class StackViewClass = NSClassFromString(@"AWEElementStackView");
 	for (NSString *className in targetClassNames) {
 		Class viewClass = NSClassFromString(className);
 		if (!viewClass)
@@ -73,7 +82,12 @@ static void forceResetAllUIElements(void) {
 		NSMutableArray *views = [NSMutableArray array];
 		findViewsOfClassHelper(window, viewClass, views);
 		for (UIView *view in views) {
-			view.alpha = 1.0;
+			if([view isKindOfClass:StackViewClass]) {
+				view.alpha = DYGetGlobalAlpha();
+			}
+			else{
+				view.alpha = 1.0; // 恢复透明度
+			}
 		}
 	}
 }
@@ -83,12 +97,31 @@ static void reapplyHidingToAllElements(HideUIButton *button) {
 	[button hideUIElements];
 }
 static void initTargetClassNames(void) {
-	targetClassNames = @[
-		@"AWEHPTopBarCTAContainer", @"AWEHPDiscoverFeedEntranceView", @"AWELeftSideBarEntranceView", @"DUXBadge", @"AWEBaseElementView", @"AWEElementStackView",
-		@"AWEPlayInteractionDescriptionLabel", @"AWEUserNameLabel", @"AWEStoryProgressSlideView", @"AWEStoryProgressContainerView", @"ACCEditTagStickerView", @"AWEFeedTemplateAnchorView",
-		@"AWESearchFeedTagView", @"AWEPlayInteractionSearchAnchorView", @"AFDRecommendToFriendTagView", @"AWELandscapeFeedEntryView", @"AWEFeedAnchorContainerView", @"AFDAIbumFolioView",
-		@"AWENormalModeTabBar"
-	];
+    NSMutableArray<NSString *> *list = [@[
+        @"AWEHPTopBarCTAContainer", @"AWEHPDiscoverFeedEntranceView", @"AWELeftSideBarEntranceView",
+        @"DUXBadge", @"AWEBaseElementView", @"AWEElementStackView",
+        @"AWEPlayInteractionDescriptionLabel", @"AWEUserNameLabel",
+        @"ACCEditTagStickerView", @"AWEFeedTemplateAnchorView",
+        @"AWESearchFeedTagView", @"AWEPlayInteractionSearchAnchorView",
+        @"AFDRecommendToFriendTagView", @"AWELandscapeFeedEntryView",
+        @"AWEFeedAnchorContainerView", @"AFDAIbumFolioView", @"DUXPopover",
+		@"AWEMixVideoPanelMoreView", @"AWEHotSearchInnerBottomView"
+    ] mutableCopy];
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTabBar"]) {
+        [list addObject:@"AWENormalModeTabBar"];
+    }
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideDanmaku"]) {
+		[list addObject:@"AWEVideoPlayDanmakuContainerView"];
+	}
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideSlider"]) {
+		[list addObject:@"AWEStoryProgressSlideView"];
+		[list addObject:@"AWEStoryProgressContainerView"];
+	}
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideChapter"]) {
+		[list addObject:@"AWEDemaciaChapterProgressSlider"];
+	}
+
+    targetClassNames = [list copy];
 }
 @implementation HideUIButton
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -257,6 +290,7 @@ static void initTargetClassNames(void) {
 		[[NSUserDefaults standardUserDefaults] synchronize];
 	}
 }
+
 - (void)handleTap {
     if (isAppInTransition)
         return;
@@ -265,6 +299,12 @@ static void initTargetClassNames(void) {
         [self hideUIElements];
         self.isElementsHidden = YES;
         self.selected = YES;
+        
+        // 如果设置了隐藏倍速按钮，则在清屏时隐藏它
+        BOOL hideSpeed = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideSpeed"];
+        if (hideSpeed) {
+            hideSpeedButton();
+        }
     } else {
         forceResetAllUIElements();
         // 还原 AWEPlayInteractionProgressContainerView 视图
@@ -272,11 +312,17 @@ static void initTargetClassNames(void) {
         self.isElementsHidden = NO;
         [self.hiddenViewsList removeAllObjects];
         self.selected = NO;
+        
+        // 如果设置了隐藏倍速按钮，则在恢复UI时显示它
+        BOOL hideSpeed = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideSpeed"];
+        if (hideSpeed) {
+            showSpeedButton();
+        }
     }
 }
 
 - (void)restoreAWEPlayInteractionProgressContainerView {
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"] || [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTimeProgress"]) {
         for (UIWindow *window in [UIApplication sharedApplication].windows) {
             [self recursivelyRestoreAWEPlayInteractionProgressContainerViewInView:window];
         }
@@ -285,7 +331,13 @@ static void initTargetClassNames(void) {
 
 - (void)recursivelyRestoreAWEPlayInteractionProgressContainerViewInView:(UIView *)view {
     if ([view isKindOfClass:NSClassFromString(@"AWEPlayInteractionProgressContainerView")]) {
-        view.hidden = NO;
+		if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
+			// 如果设置了移除时间进度条，直接显示
+			view.hidden = NO;
+		} else {
+			// 恢复透明度
+    		view.alpha = DYGetGlobalAlpha();
+		}
         return;
     }
 
@@ -317,7 +369,7 @@ static void initTargetClassNames(void) {
 }
 
 - (void)hideAWEPlayInteractionProgressContainerView {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"] || [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideTimeProgress"]) {
             for (UIWindow *window in [UIApplication sharedApplication].windows) {
                     [self recursivelyHideAWEPlayInteractionProgressContainerViewInView:window];
                 }
@@ -326,7 +378,14 @@ static void initTargetClassNames(void) {
 
 - (void)recursivelyHideAWEPlayInteractionProgressContainerViewInView:(UIView *)view {
     if ([view isKindOfClass:NSClassFromString(@"AWEPlayInteractionProgressContainerView")]) {
-        view.hidden = YES;
+		if([[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYEnabshijianjindu"]) {
+			// 如果设置了移除时间进度条
+			view.hidden = YES;
+		} else {
+			// 否则设置透明度为 0.0,可拖动
+			view.tag = DYYY_IGNORE_GLOBAL_ALPHA_TAG;
+        	view.alpha = 0.0;
+		}
         [self.hiddenViewsList addObject:view];
         return;
     }
@@ -359,10 +418,16 @@ static void initTargetClassNames(void) {
 	}
 }
 - (void)safeResetState {
-	forceResetAllUIElements();
-	self.isElementsHidden = NO;
-	[self.hiddenViewsList removeAllObjects];
-	self.selected = NO;
+    forceResetAllUIElements();
+    self.isElementsHidden = NO;
+    [self.hiddenViewsList removeAllObjects];
+    self.selected = NO;
+    
+    // 恢复倍速按钮的显示
+    BOOL hideSpeed = [[NSUserDefaults standardUserDefaults] boolForKey:@"DYYYHideSpeed"];
+    if (hideSpeed) {
+        showSpeedButton();
+    }
 }
 - (void)dealloc {
 	[self.checkTimer invalidate];
@@ -478,30 +543,77 @@ static void initTargetClassNames(void) {
 	});
 }
 %end
-// 修改: 使用 viewWillAppear 和 loadView 来更早地显示按钮
+
+%hook AWECommentContainerViewController
+
+- (void)viewWillAppear:(BOOL)animated {
+    %orig;
+    // 评论界面将要显示，设置标记并隐藏按钮
+    isCommentViewVisible = YES;
+    if (hideButton) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            hideButton.hidden = YES;
+        });
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+    // 评论界面已显示，确保按钮隐藏
+    isCommentViewVisible = YES;
+    if (hideButton) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            hideButton.hidden = YES;
+        });
+    }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    %orig;
+    // 评论界面将要消失
+    if (hideButton) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            hideButton.hidden = YES;
+        });
+    }
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    %orig;
+    // 评论界面已消失，恢复按钮显示
+    isCommentViewVisible = NO;
+    if (hideButton && isInPlayInteractionVC) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            hideButton.hidden = NO;
+        });
+    }
+}
+
+%end
+
 %hook AWEPlayInteractionViewController
 - (void)loadView {
     %orig;
     // 提前准备按钮显示
     if (hideButton) {
-        hideButton.hidden = NO;
+        hideButton.hidden = isCommentViewVisible; // 根据评论界面状态决定是否显示
         hideButton.alpha = 0.5;
     }
 }
 - (void)viewWillAppear:(BOOL)animated {
     %orig;
     isInPlayInteractionVC = YES;
-    // 立即显示按钮
+    // 立即显示按钮，除非评论界面可见
     if (hideButton) {
-        hideButton.hidden = NO;
+        hideButton.hidden = isCommentViewVisible;
         hideButton.alpha = 0.5;
     }
 }
 - (void)viewDidAppear:(BOOL)animated {
     %orig;
-    // 再次确保按钮可见
+    // 再次确保按钮可见，除非评论界面可见
     if (hideButton) {
-        hideButton.hidden = NO;
+        hideButton.hidden = isCommentViewVisible;
     }
 }
 - (void)viewWillDisappear:(BOOL)animated {
@@ -513,6 +625,7 @@ static void initTargetClassNames(void) {
     }
 }
 %end
+
 %hook AWEFeedContainerViewController
 - (void)aweme:(id)arg1 currentIndexWillChange:(NSInteger)arg2 {
 	if (hideButton && hideButton.isElementsHidden) {
