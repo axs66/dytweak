@@ -1,5 +1,4 @@
 #import "DYYYSettingsHelper.h"
-#import "AWESettingItemModel.h"  // ✅ 用到了属性、alloc，必须 import
 #import "DYYYUtils.h"
 #import <UIKit/UIKit.h>
 
