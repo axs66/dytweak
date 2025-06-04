@@ -9,7 +9,6 @@
 #import <objc/runtime.h>
 
 #import "AwemeHeaders.h"
-#import "DYYYSettingViewController.h"
 #import "CityManager.h"
 #import "DYYYBottomAlertView.h"
 #import "DYYYManager.h"

@@ -1,16 +1,5 @@
-// DYYYManager.h
-
-// 先定义 enum
-typedef NS_ENUM(NSUInteger, MediaType) {
-    MediaTypeImage,
-    MediaTypeVideo,
-    MediaTypeLivePhoto
-};
-
-// 然后正常 import
 #import <UIKit/UIKit.h>
 #import "AwemeHeaders.h"
-
 
 // 主题管理类（外部类声明）
 @interface AWEUIThemeManager : NSObject
