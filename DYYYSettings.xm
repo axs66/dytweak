@@ -3017,13 +3017,13 @@ void showDYYYSettingsVC(UIViewController *rootVC, BOOL hasAgreed) {
 	aboutItem.colorStyle = 0;
 	aboutItem.isEnable = YES;
 	aboutItem.cellTappedBlock = ^{
-	  [DYYYSettingsHelper showAboutDialog(@"关于抖音净化",
-				    @"版本: " DYYY_VERSION_STRING @"\n\n"
-				    @"感谢使用抖音净化\n\n"
-				    @"感谢huami开源\n\n"
-				    @"人妖嘉嘉户口本无人\n\n"
-				    @"开源地址 huami1314/DYYY\n\n",
-				    nil);
+	[DYYYSettingsHelper showAboutDialog:@"关于抖音净化"
+				      message:@"版本: " DYYY_VERSION @"\n\n"
+					      @"感谢使用抖音净化\n\n"
+					      @"感谢huami开源\n\n"
+					      @"人妖嘉嘉户口本无人\n\n"
+					      @"开源地址 huami1314/DYYY\n\n"
+				    onConfirm:nil];
 	};
 	[aboutItems addObject:aboutItem];
 
