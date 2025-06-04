@@ -15,8 +15,6 @@
 #import <Foundation/Foundation.h>
 #import "AwemeHeaders.h"
 
-@interface DYYYSettingsHelper : NSObject
-
 /**
  * 获取用户默认设置（布尔值）
  * @param key 设置键名
