@@ -1,5 +1,5 @@
 #
-#  dytweak
+#  DYYY
 #
 #  Copyright (c) 2024 huami. All rights reserved.
 #  Channel: @huamidev
@@ -18,15 +18,13 @@ ifeq ($(SCHEME),roothide)
 else ifeq ($(SCHEME),rootless)
     export THEOS_PACKAGE_SCHEME = rootless
 else
-    # 默认使用rootless
-    export THEOS_PACKAGE_SCHEME = rootless
+    unexport THEOS_PACKAGE_SCHEME
 endif
 
-# 判断是否在GitHub Action环境中运行
+# 在GitHub Actions中运行时的特殊配置
 ifeq ($(GITHUB_ACTIONS),true)
-    # 在GitHub Actions中运行时的特殊配置
-    export THEOS_PACKAGE_SCHEME = rootless
     export INSTALL = 0
+    export FINALPACKAGE = 1
 endif
 
 export DEBUG = 0
@@ -39,7 +37,7 @@ TWEAK_NAME = dytweak
 dytweak_LIBRARY_SEARCH_PATHS = $(THEOS_PROJECT_DIR)/libs
 dytweak_HEADER_SEARCH_PATHS = $(THEOS_PROJECT_DIR)/libs/include
 
-dytweak_FILES = DYYY.xm DYYYHide.xm DYYYFloatClearButton.xm DYYYFloatSpeedButton.xm DYYYSettings.xm DYYYABTestHook.xm DYYYLongPressPanel.xm DYYYSaveMedia.xm DYYYDoubleClickMenu.xm DYYYSocialStats.xm DYYYSettingViewController.m DYYYBottomAlertView.m DYYYCustomInputView.m DYYYOptionsSelectionView.m DYYYIconOptionsDialogView.m DYYYAboutDialogView.m DYYYKeywordListView.m DYYYFilterSettingsView.m DYYYManager.m DYYYUtils.m CityManager.m
+dytweak_FILES = DYYY.xm DYYYFloatClearButton.xm DYYYFloatSpeedButton.xm DYYYSettings.xm DYYYABTestHook.xm DYYYLongPressPanel.xm DYYYSocialStats.xm DYYYSettingsHelper.m DYYYSettingViewController.m DYYYBottomAlertView.m DYYYCustomInputView.m DYYYOptionsSelectionView.m DYYYIconOptionsDialogView.m DYYYAboutDialogView.m DYYYKeywordListView.m DYYYFilterSettingsView.m DYYYConfirmCloseView.m DYYYToast.m DYYYManager.m DYYYUtils.m CityManager.m
 dytweak_CFLAGS = -fobjc-arc -w -I$(dytweak_HEADER_SEARCH_PATHS)
 dytweak_LDFLAGS = -L$(dytweak_LIBRARY_SEARCH_PATHS) -lwebp -weak_framework AVFAudio
 dytweak_FRAMEWORKS = CoreAudio
