@@ -399,7 +399,6 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
 
 - (void)setupSectionTitles {
     self.sectionTitles = [@[@"基本设置", @"界面设置", @"隐藏设置", @"顶栏移除",@"隐藏面板", @"面板设置",@"功能设置", @"悬浮按钮", @"伪装数据"] mutableCopy];
-    self.filteredSectionTitles = [self.sectionTitles mutableCopy];
 }
 
 - (void)setupFooterLabel {
