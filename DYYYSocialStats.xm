@@ -31,10 +31,10 @@ static NSString *customMutualCount = nil;
 static BOOL socialStatsEnabled = NO;
 
 // 静态缓存的NSNumber值
-static NSNumber *cachedFollowersNumber = nil;
-static NSNumber *cachedLikesNumber = nil;
-static NSNumber *cachedFollowingNumber = nil;
-static NSNumber *cachedMutualNumber = nil;
+static NSNumber *cachedFollowersNumber = @0;
+static NSNumber *cachedLikesNumber = @0;
+static NSNumber *cachedFollowingNumber = @0;
+static NSNumber *cachedMutualNumber = @0;
 
 // 防止重复更新（节流控制）
 static NSTimeInterval lastSocialStatsUpdateTime = 0;
@@ -55,10 +55,10 @@ static void loadCustomSocialStats() {
         customFollowingCount = [defaults objectForKey:DYYY_SOCIAL_FOLLOWING_KEY];
         customMutualCount = [defaults objectForKey:DYYY_SOCIAL_MUTUAL_KEY];
         
-        cachedFollowersNumber = customFollowersCount ? @([customFollowersCount longLongValue]) : nil;
-        cachedLikesNumber = customLikesCount ? @([customLikesCount longLongValue]) : nil;
-        cachedFollowingNumber = customFollowingCount ? @([customFollowingCount longLongValue]) : nil;
-        cachedMutualNumber = customMutualCount ? @([customMutualCount longLongValue]) : nil;
+        cachedFollowersNumber = customFollowersCount ? @([customFollowersCount longLongValue]) : @0;
+        cachedLikesNumber = customLikesCount ? @([customLikesCount longLongValue]) : @0;
+        cachedFollowingNumber = customFollowingCount ? @([customFollowingCount longLongValue]) : @0;
+        cachedMutualNumber = customMutualCount ? @([customMutualCount longLongValue]) : @0;
     }
 }
 
