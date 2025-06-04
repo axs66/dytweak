@@ -1,20 +1,9 @@
-// DYYYSettingsHelper.h
-
-// 👇 加在最上方或 @interface 前
-@class AWESettingItemModel;
-
-@interface DYYYSettingsHelper : NSObject
-
-+ (void)applyDependencyRulesForItem:(AWESettingItemModel *)item;
-+ (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict;
-+ (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict cellTapHandlers:(NSMutableDictionary *)handlers;
-
-@end
-
-
 #import <Foundation/Foundation.h>
 #import "AwemeHeaders.h"
+#import "AWESettingItemModel.h"
 
+@interface DYYYSettingsHelper : NSObject
+  
 /**
  * 获取用户默认设置（布尔值）
  * @param key 设置键名
