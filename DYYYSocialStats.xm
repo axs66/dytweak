@@ -3,7 +3,7 @@
 #import "AwemeHeaders.h"
 #import "DYYYManager.h"
 
-// 添加完整接口声明
+// 接口声明
 @interface AWEProfileSocialStatisticView : UIView
 - (void)setFansCount:(NSNumber *)count;
 - (void)setPraiseCount:(NSNumber *)count;
@@ -16,326 +16,318 @@
 - (void)reloadSettings;
 @end
 
-// 控制开关 & 自定义数据持久化
+// 常量定义
 #define DYYY_SOCIAL_STATS_ENABLED_KEY @"DYYYEnableSocialStatsCustom"
-#define DYYY_SOCIAL_FOLLOWERS_KEY @"DYYYCustomFollowers"
-#define DYYY_SOCIAL_LIKES_KEY @"DYYYCustomLikes"
-#define DYYY_SOCIAL_FOLLOWING_KEY @"DYYYCustomFollowing"
-#define DYYY_SOCIAL_MUTUAL_KEY @"DYYYCustomMutual"
+#define DYYY_SOCIAL_FOLLOWERS_KEY    @"DYYYCustomFollowers"
+#define DYYY_SOCIAL_LIKES_KEY        @"DYYYCustomLikes"
+#define DYYY_SOCIAL_FOLLOWING_KEY    @"DYYYCustomFollowing"
+#define DYYY_SOCIAL_MUTUAL_KEY       @"DYYYCustomMutual"
 
-// 静态缓存
-static NSString *customFollowersCount = nil;
-static NSString *customLikesCount = nil;
-static NSString *customFollowingCount = nil;
-static NSString *customMutualCount = nil;
-static BOOL socialStatsEnabled = NO;
+// 线程安全的缓存管理
+@interface DYYYSocialStatsCache : NSObject
++ (instancetype)shared;
+@property (atomic, strong) NSNumber *followers;
+@property (atomic, strong) NSNumber *likes;
+@property (atomic, strong) NSNumber *following;
+@property (atomic, strong) NSNumber *mutual;
+@property (atomic, assign) BOOL enabled;
+@property (atomic, assign) NSTimeInterval lastUpdateTime;
+@end
 
-// 静态缓存的NSNumber值
-static NSNumber *cachedFollowersNumber = @0;
-static NSNumber *cachedLikesNumber = @0;
-static NSNumber *cachedFollowingNumber = @0;
-static NSNumber *cachedMutualNumber = @0;
-
-// 防止重复更新（节流控制）
-static NSTimeInterval lastSocialStatsUpdateTime = 0;
-static NSTimeInterval const socialStatsUpdateInterval = 1.0; // 最小1秒更新间隔
-
-// 函数声明
-static void loadCustomSocialStats(void);
-static void updateModelData(id model);
-
-// 加载设置数据
-static void loadCustomSocialStats() {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    socialStatsEnabled = [defaults boolForKey:DYYY_SOCIAL_STATS_ENABLED_KEY];
-    
-    if (socialStatsEnabled) {
-        customFollowersCount = [defaults objectForKey:DYYY_SOCIAL_FOLLOWERS_KEY];
-        customLikesCount = [defaults objectForKey:DYYY_SOCIAL_LIKES_KEY];
-        customFollowingCount = [defaults objectForKey:DYYY_SOCIAL_FOLLOWING_KEY];
-        customMutualCount = [defaults objectForKey:DYYY_SOCIAL_MUTUAL_KEY];
-        
-        cachedFollowersNumber = customFollowersCount ? @([customFollowersCount longLongValue]) : @0;
-        cachedLikesNumber = customLikesCount ? @([customLikesCount longLongValue]) : @0;
-        cachedFollowingNumber = customFollowingCount ? @([customFollowingCount longLongValue]) : @0;
-        cachedMutualNumber = customMutualCount ? @([customMutualCount longLongValue]) : @0;
-    }
+@implementation DYYYSocialStatsCache
++ (instancetype)shared {
+    static DYYYSocialStatsCache *shared = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        shared = [[self alloc] init];
+        [shared loadConfig];
+    });
+    return shared;
 }
+
+- (void)loadConfig {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    _enabled = [defaults boolForKey:DYYY_SOCIAL_STATS_ENABLED_KEY];
+    
+    _followers = @([defaults integerForKey:DYYY_SOCIAL_FOLLOWERS_KEY]);
+    _likes = @([defaults integerForKey:DYYY_SOCIAL_LIKES_KEY]);
+    _following = @([defaults integerForKey:DYYY_SOCIAL_FOLLOWING_KEY]);
+    _mutual = @([defaults integerForKey:DYYY_SOCIAL_MUTUAL_KEY]);
+    
+    _lastUpdateTime = 0;
+}
+@end
 
 // 模型数据更新
 static void updateModelData(id model) {
-    if (!socialStatsEnabled || !model) return;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    if (!cache.enabled || !model) return;
     
-    // 粉丝
-    if (cachedFollowersNumber) {
-        NSArray *followerKeys = @[@"followerCount", @"fansCount", @"fans_count"];
-        for (NSString *key in followerKeys) {
-            if ([model respondsToSelector:NSSelectorFromString(key)]) {
-                [model setValue:cachedFollowersNumber forKey:key];
+    @try {
+        // 粉丝
+        if (cache.followers) {
+            NSArray *followerKeys = @[@"followerCount", @"fansCount", @"fans_count"];
+            for (NSString *key in followerKeys) {
+                if ([model respondsToSelector:NSSelectorFromString(key)]) {
+                    [model setValue:cache.followers forKey:key];
+                }
             }
         }
-    }
-    
-    // 获赞
-    if (cachedLikesNumber) {
-        NSArray *likeKeys = @[
-            @"totalFavorited", @"favoriteCount", @"diggCount", 
-            @"praiseCount", @"likeCount", @"like_count",
-            @"total_favorited", @"favorite_count", @"digg_count"
-        ];
-        for (NSString *key in likeKeys) {
-            if ([model respondsToSelector:NSSelectorFromString(key)]) {
-                [model setValue:cachedLikesNumber forKey:key];
+        
+        // 获赞
+        if (cache.likes) {
+            NSArray *likeKeys = @[
+                @"totalFavorited", @"favoriteCount", @"diggCount", 
+                @"praiseCount", @"likeCount", @"like_count",
+                @"total_favorited", @"favorite_count", @"digg_count"
+            ];
+            for (NSString *key in likeKeys) {
+                if ([model respondsToSelector:NSSelectorFromString(key)]) {
+                    [model setValue:cache.likes forKey:key];
+                }
             }
         }
-    }
-    
-    // 关注
-    if (cachedFollowingNumber) {
-        NSArray *followingKeys = @[@"followingCount", @"followCount", @"follow_count"];
-        for (NSString *key in followingKeys) {
-            if ([model respondsToSelector:NSSelectorFromString(key)]) {
-                [model setValue:cachedFollowingNumber forKey:key];
+        
+        // 关注
+        if (cache.following) {
+            NSArray *followingKeys = @[@"followingCount", @"followCount", @"follow_count"];
+            for (NSString *key in followingKeys) {
+                if ([model respondsToSelector:NSSelectorFromString(key)]) {
+                    [model setValue:cache.following forKey:key];
+                }
             }
         }
-    }
-    
-    // 互关
-    if (cachedMutualNumber) {
-        NSArray *mutualKeys = @[
-            @"friendCount", @"mutualFriendCount", @"followFriendCount",
-            @"mutualCount", @"friend_count", @"mutual_friend_count",
-            @"follow_friend_count", @"mutual_count"
-        ];
-        for (NSString *key in mutualKeys) {
-            if ([model respondsToSelector:NSSelectorFromString(key)]) {
-                [model setValue:cachedMutualNumber forKey:key];
+        
+        // 互关
+        if (cache.mutual) {
+            NSArray *mutualKeys = @[
+                @"friendCount", @"mutualFriendCount", @"followFriendCount",
+                @"mutualCount", @"friend_count", @"mutual_friend_count",
+                @"follow_friend_count", @"mutual_count"
+            ];
+            for (NSString *key in mutualKeys) {
+                if ([model respondsToSelector:NSSelectorFromString(key)]) {
+                    [model setValue:cache.mutual forKey:key];
+                }
             }
         }
+    } @catch (NSException *e) {
+        NSLog(@"[DYYY] Model update failed: %@", e);
     }
 }
 
-// 数据Hook
+#pragma mark - Hook Implementations
+
 %hook AWEUserModel
+
 - (id)init {
     id instance = %orig;
-    if (socialStatsEnabled && instance) {
+    if ([DYYYSocialStatsCache shared].enabled && instance) {
         updateModelData(instance);
     }
     return instance;
 }
 
+// 粉丝数相关
 - (NSNumber *)followerCount {
-    return socialStatsEnabled && cachedFollowersNumber ? cachedFollowersNumber : %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    return cache.enabled && cache.followers ? cache.followers : %orig;
 }
 
 - (void)setFollowerCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowersNumber) {
-        %orig(cachedFollowersNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.followers ? cache.followers : count);
 }
 
+// 关注数相关
 - (NSNumber *)followingCount {
-    return socialStatsEnabled && cachedFollowingNumber ? cachedFollowingNumber : %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    return cache.enabled && cache.following ? cache.following : %orig;
 }
 
 - (void)setFollowingCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowingNumber) {
-        %orig(cachedFollowingNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.following ? cache.following : count);
 }
 
+// 获赞数相关
 - (NSNumber *)totalFavorited {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    return cache.enabled && cache.likes ? cache.likes : %orig;
 }
 
 - (void)setTotalFavorited:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
-        %orig(cachedLikesNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.likes ? cache.likes : count);
 }
 
 - (NSNumber *)diggCount {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    return cache.enabled && cache.likes ? cache.likes : %orig;
 }
 
 - (void)setDiggCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
-        %orig(cachedLikesNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.likes ? cache.likes : count);
 }
 
 - (NSNumber *)likeCount {
-    return socialStatsEnabled && cachedLikesNumber ? cachedLikesNumber : %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    return cache.enabled && cache.likes ? cache.likes : %orig;
 }
 
 - (void)setLikeCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
-        %orig(cachedLikesNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.likes ? cache.likes : count);
 }
 
+// 互关数相关
 - (NSNumber *)friendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    return cache.enabled && cache.mutual ? cache.mutual : %orig;
 }
 
 - (void)setFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
-        %orig(cachedMutualNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.mutual ? cache.mutual : count);
 }
 
 - (NSNumber *)mutualFriendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    return cache.enabled && cache.mutual ? cache.mutual : %orig;
 }
 
 - (void)setMutualFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
-        %orig(cachedMutualNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.mutual ? cache.mutual : count);
 }
 
 - (NSNumber *)followFriendCount {
-    return socialStatsEnabled && cachedMutualNumber ? cachedMutualNumber : %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    return cache.enabled && cache.mutual ? cache.mutual : %orig;
 }
 
 - (void)setFollowFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
-        %orig(cachedMutualNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.mutual ? cache.mutual : count);
 }
+
 %end
 
-// 统计视图
 %hook AWEProfileSocialStatisticView
 
 - (void)setFansCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowersNumber) {
-        %orig(cachedFollowersNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.followers ? cache.followers : count);
 }
 
 - (void)setPraiseCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedLikesNumber) {
-        %orig(cachedLikesNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.likes ? cache.likes : count);
 }
 
 - (void)setFollowingCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedFollowingNumber) {
-        %orig(cachedFollowingNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.following ? cache.following : count);
 }
 
 - (void)setFriendCount:(NSNumber *)count {
-    if (socialStatsEnabled && cachedMutualNumber) {
-        %orig(cachedMutualNumber);
-    } else {
-        %orig;
-    }
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    %orig(cache.enabled && cache.mutual ? cache.mutual : count);
 }
 
-// 节流处理，控制更新频率
 - (void)p_updateSocialStatisticContent:(BOOL)animated {
-    NSTimeInterval now = CACurrentMediaTime();
-    if (now - lastSocialStatsUpdateTime < socialStatsUpdateInterval) {
-        // 小于1秒内，跳过重复更新
-        return;
-    }
-    lastSocialStatsUpdateTime = now;
-    
     %orig;
     
-    if (socialStatsEnabled) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (socialStatsEnabled) {
-                [self setFansCount:cachedFollowersNumber];
-                [self setPraiseCount:cachedLikesNumber];
-                [self setFollowingCount:cachedFollowingNumber];
-                [self setFriendCount:cachedMutualNumber];
-            }
-        });
-    }
-}
-
-// 优化取消 layoutSubviews 中重复调用，改为仅调用一次更新
-- (void)layoutSubviews {
-    %orig;
-    // 取消dispatch_async调用，避免重复更新
-    [self p_updateSocialStatisticContent:YES];
-}
-
-%end
-
-// NSDictionary的objectForKey: hook
-%hook NSDictionary
-
-// 声明一个静态变量和初始化函数
-static NSSet *keySet = nil;
-
-+ (void)initialize {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        keySet = [NSSet setWithObjects:
-                  @"totalFavorited", @"followerCount", @"followingCount", @"friendCount",
-                  @"favoriteCount", @"diggCount", @"praiseCount", @"likeCount", @"like_count",
-                  @"fansCount", @"fans_count", @"followCount", @"follow_count", @"mutualFriendCount",
-                  @"followFriendCount", @"mutualCount", @"friend_count", @"mutual_friend_count",
-                  @"follow_friend_count", @"mutual_count", @"total_favorited", @"favorite_count",
-                  @"digg_count", nil];
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    if (!cache.enabled) return;
+    
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    if (now - cache.lastUpdateTime < 0.5) return;
+    cache.lastUpdateTime = now;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @try {
+            if (cache.followers) [self setFansCount:cache.followers];
+            if (cache.likes) [self setPraiseCount:cache.likes];
+            if (cache.following) [self setFollowingCount:cache.following];
+            if (cache.mutual) [self setFriendCount:cache.mutual];
+        } @catch (NSException *e) {
+            NSLog(@"[DYYY] Update stats failed: %@", e);
+        }
     });
 }
 
-- (id)objectForKey:(id)key {
-    id origVal = %orig(key);
-    if (!socialStatsEnabled || !key || ![key isKindOfClass:[NSString class]]) {
-        return origVal;
-    }
+- (void)layoutSubviews {
+    %orig;
     
-    if (![keySet containsObject:key]) {
-        return origVal;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    if (cache.enabled) {
+        [self p_updateSocialStatisticContent:YES];
     }
-    
-    // 你的伪造数据替换逻辑
-    if ([key isEqualToString:@"followerCount"] || [key isEqualToString:@"fansCount"] || [key isEqualToString:@"fans_count"]) {
-        return cachedFollowersNumber ?: origVal;
-    } else if ([key isEqualToString:@"totalFavorited"] || [key isEqualToString:@"favoriteCount"] || [key isEqualToString:@"diggCount"] || [key isEqualToString:@"praiseCount"] || [key isEqualToString:@"likeCount"] || [key isEqualToString:@"like_count"] || [key isEqualToString:@"total_favorited"] || [key isEqualToString:@"favorite_count"] || [key isEqualToString:@"digg_count"]) {
-        return cachedLikesNumber ?: origVal;
-    } else if ([key isEqualToString:@"followingCount"] || [key isEqualToString:@"followCount"] || [key isEqualToString:@"follow_count"]) {
-        return cachedFollowingNumber ?: origVal;
-    } else if ([key isEqualToString:@"friendCount"] || [key isEqualToString:@"mutualFriendCount"] || [key isEqualToString:@"followFriendCount"] || [key isEqualToString:@"mutualCount"] || [key isEqualToString:@"friend_count"] || [key isEqualToString:@"mutual_friend_count"] || [key isEqualToString:@"follow_friend_count"] || [key isEqualToString:@"mutual_count"]) {
-        return cachedMutualNumber ?: origVal;
-    }
-    
-    return origVal;
 }
 
 %end
 
+%hook NSDictionary
 
-// 配置加载入口
+- (id)objectForKey:(id)aKey {
+    id originalValue = %orig;
+    DYYYSocialStatsCache *cache = [DYYYSocialStatsCache shared];
+    
+    if (!cache.enabled || !aKey || !originalValue || ![aKey isKindOfClass:[NSString class]]) {
+        return originalValue;
+    }
+    
+    NSString *keyString = (NSString *)aKey;
+    
+    @try {
+        // 粉丝
+        if (cache.followers && 
+            ([keyString isEqualToString:@"follower_count"] ||
+             [keyString isEqualToString:@"fans_count"] ||
+             [keyString isEqualToString:@"follower"] ||
+             [keyString isEqualToString:@"fans"])) {
+            return cache.followers;
+        }
+        
+        // 获赞
+        if (cache.likes && 
+            ([keyString isEqualToString:@"total_favorited"] ||
+             [keyString isEqualToString:@"favorite_count"] ||
+             [keyString isEqualToString:@"digg_count"] ||
+             [keyString isEqualToString:@"like_count"] ||
+             [keyString isEqualToString:@"praise_count"])) {
+            return cache.likes;
+        }
+        
+        // 关注
+        if (cache.following && 
+            ([keyString isEqualToString:@"following_count"] ||
+             [keyString isEqualToString:@"follow_count"] ||
+             [keyString isEqualToString:@"following"] ||
+             [keyString isEqualToString:@"follow"])) {
+            return cache.following;
+        }
+        
+        // 互关
+        if (cache.mutual && 
+            ([keyString isEqualToString:@"friend_count"] ||
+             [keyString isEqualToString:@"mutual_friend_count"] ||
+             [keyString isEqualToString:@"mutual_count"] ||
+             [keyString isEqualToString:@"friendship_count"])) {
+            return cache.mutual;
+        }
+    } @catch (NSException *e) {
+        NSLog(@"[DYYY] Dictionary hook failed: %@", e);
+    }
+    
+    return originalValue;
+}
+
+%end
+
 %ctor {
-    loadCustomSocialStats();
+    // 初始化时自动加载配置
+    [DYYYSocialStatsCache shared];
 }
