@@ -1,37 +1,29 @@
-// DYYYSettingsHelper.h
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import "AwemeHeaders.h"
 #import "AWESettingItemModel.h" // ✅ 用了具体属性，必须 import
 
 @interface DYYYSettingsHelper : NSObject
 
+// 设置项相关
 + (void)applyDependencyRulesForItem:(AWESettingItemModel *)item;
 + (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict;
 + (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict cellTapHandlers:(NSMutableDictionary *)handlers;
 
-@end
-
-#import <Foundation/Foundation.h>
-#import "AwemeHeaders.h"
-  
-/**
- * 获取用户默认设置（布尔值）
- * @param key 设置键名
- * @return 布尔值设置
- */
+// 获取用户默认设置（布尔值）
+/// @param key 设置键名
+/// @return 布尔值设置
 + (bool)getUserDefaults:(NSString *)key;
 
-/**
- * 设置用户默认值
- * @param object 要保存的对象
- * @param key 设置键名
- */
+// 设置用户默认值
+/// @param object 要保存的对象
+/// @param key 设置键名
 + (void)setUserDefaults:(id)object forKey:(NSString *)key;
 
-/**
- * 显示自定义关于弹窗
- * @param title 标题
- * @param message 消息内容
- * @param onConfirm 确认回调
- */
+// 显示自定义关于弹窗
+/// @param title 标题
+/// @param message 消息内容
+/// @param onConfirm 确认回调
 + (void)showAboutDialog:(NSString *)title message:(NSString *)message onConfirm:(void (^)(void))onConfirm;
 
 /**
