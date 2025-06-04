@@ -1,5 +1,7 @@
 #import <UIKit/UIKit.h>
 #import "AwemeHeaders.h"
+#import "MediaDefines.h"
+
 
 // 主题管理类（外部类声明）
 @interface AWEUIThemeManager : NSObject
