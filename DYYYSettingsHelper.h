@@ -1,8 +1,16 @@
-#import <Foundation/Foundation.h>
-#import "AwemeHeaders.h"
-#import "AWESettingItemModel.h"
+// DYYYSettingsHelper.h
+#import "AWESettingItemModel.h" // ✅ 用了具体属性，必须 import
 
 @interface DYYYSettingsHelper : NSObject
+
++ (void)applyDependencyRulesForItem:(AWESettingItemModel *)item;
++ (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict;
++ (AWESettingItemModel *)createSettingItem:(NSDictionary *)dict cellTapHandlers:(NSMutableDictionary *)handlers;
+
+@end
+
+#import <Foundation/Foundation.h>
+#import "AwemeHeaders.h"
   
 /**
  * 获取用户默认设置（布尔值）
