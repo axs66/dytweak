@@ -55,12 +55,6 @@ static void showIconOptionsDialog(NSString *title, UIImage *previewImage, NSStri
 	[self cleanupTempFile];
 }
 
-// MediaDefines.h
-typedef NS_ENUM(NSUInteger, MediaType) {
-    MediaTypeImage,
-    MediaTypeVideo,
-    MediaTypeLivePhoto
-};
 
 // 添加清理临时文件的方法
 - (void)cleanupTempFile {
