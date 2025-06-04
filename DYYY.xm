@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
-#import "AWESettingItemModel.h"  // ✅ 用到了属性、alloc，必须 import
 #import "AwemeHeaders.h"
 #import "DYYYSettingViewController.h"
 #import "CityManager.h"
