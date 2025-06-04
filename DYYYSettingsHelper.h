@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "AwemeHeaders.h"
+#import "AWESettingItemModel.h"
 
 @interface DYYYSettingsHelper : NSObject
 
