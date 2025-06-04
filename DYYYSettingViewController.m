@@ -386,12 +386,19 @@ typedef NS_ENUM(NSInteger, DYYYSettingItemType) {
             [DYYYSettingItem itemWithTitle:@"清屏隐藏滑条" key:@"DYYYHideSlider" type:DYYYSettingItemTypeSwitch],
             [DYYYSettingItem itemWithTitle:@"清屏隐藏底栏" key:@"DYYYHideTabBar" type:DYYYSettingItemTypeSwitch],
             [DYYYSettingItem itemWithTitle:@"清屏隐藏倍速" key:@"DYYYHideSpeed" type:DYYYSettingItemTypeSwitch]
+        ],
+        @[
+            [DYYYSettingItem itemWithTitle:@"自定义功能开关" key:@"DYYYEnableSocialStatsCustom" type:DYYYSettingItemTypeSwitch],
+            [DYYYSettingItem itemWithTitle:@"  -粉丝数量" key:@"DYYYCustomFollowers" type:DYYYSettingItemTypeTextField placeholder:@"填写数字"],
+            [DYYYSettingItem itemWithTitle:@"  -获赞数量" key:@"DYYYCustomLikes" type:DYYYSettingItemTypeTextField placeholder:@"填写数字"],
+            [DYYYSettingItem itemWithTitle:@"  -关注数量" key:@"DYYYCustomFollowing" type:DYYYSettingItemTypeTextField placeholder:@"填写数字"],
+            [DYYYSettingItem itemWithTitle:@"  -互关数量" key:@"DYYYCustomMutual" type:DYYYSettingItemTypeTextField placeholder:@"填写数字"]
         ]
     ];
 }
 
 - (void)setupSectionTitles {
-    self.sectionTitles = [@[@"基本设置", @"界面设置", @"隐藏设置", @"顶栏移除",@"隐藏面板", @"面板设置",@"功能设置", @"悬浮按钮"] mutableCopy];
+    self.sectionTitles = [@[@"基本设置", @"界面设置", @"隐藏设置", @"顶栏移除",@"隐藏面板", @"面板设置",@"功能设置", @"悬浮按钮", @"伪装数据"] mutableCopy];
 }
 
 - (void)setupFooterLabel {
