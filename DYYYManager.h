@@ -8,6 +8,14 @@
 @property (nonatomic, assign) BOOL isLightTheme;
 @end
 
+// MediaDefines.h
+typedef NS_ENUM(NSUInteger, MediaType) {
+    MediaTypeImage,
+    MediaTypeVideo,
+    MediaTypeLivePhoto
+};
+
+
 /**
  * DYYY 主管理器类
  * 处理UI、媒体下载、保存和视频合成等功能
