@@ -1,3 +1,8 @@
+/***
+* 2025052801200
+* pxx917144686
+**/
+
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import "AwemeHeaders.h"
@@ -31,27 +36,10 @@ static NSString *customMutualCount = nil;
 static BOOL socialStatsEnabled = NO;
 
 // 静态缓存的NSNumber值
-static NSNumber *cachedFollowersNumber = @0;
-static NSNumber *cachedLikesNumber = @0;
-static NSNumber *cachedFollowingNumber = @0;
-static NSNumber *cachedMutualNumber = @0;
-
-// 加载设置并转换为 NSNumber
-static void loadSocialStatsConfig() {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
-    socialStatsEnabled = [defaults boolForKey:DYYY_SOCIAL_STATS_ENABLED_KEY];
-    
-    customFollowersCount = [defaults stringForKey:DYYY_SOCIAL_FOLLOWERS_KEY] ?: @"0";
-    customLikesCount = [defaults stringForKey:DYYY_SOCIAL_LIKES_KEY] ?: @"0";
-    customFollowingCount = [defaults stringForKey:DYYY_SOCIAL_FOLLOWING_KEY] ?: @"0";
-    customMutualCount = [defaults stringForKey:DYYY_SOCIAL_MUTUAL_KEY] ?: @"0";
-
-    cachedFollowersNumber = @(customFollowersCount.integerValue);
-    cachedLikesNumber = @(customLikesCount.integerValue);
-    cachedFollowingNumber = @(customFollowingCount.integerValue);
-    cachedMutualNumber = @(customMutualCount.integerValue);
-}
+static NSNumber *cachedFollowersNumber = nil;
+static NSNumber *cachedLikesNumber = nil;
+static NSNumber *cachedFollowingNumber = nil;
+static NSNumber *cachedMutualNumber = nil;
 
 // 防止重复更新
 static BOOL isUpdatingViews = NO;
