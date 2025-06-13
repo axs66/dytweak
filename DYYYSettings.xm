@@ -278,7 +278,7 @@ static void showDYYYSettingsVC(UIViewController *rootVC, BOOL hasAgreed);
 	UIFont *smallFont = [UIFont systemFontOfSize:12.0];
 	NSDictionary *attributes = @{NSFontAttributeName : smallFont, NSForegroundColorAttributeName : self.textColor};
 
-	[@"DYYY" drawInRect:rect withAttributes:attributes];
+	[@"Axs" drawInRect:rect withAttributes:attributes];
 
 	CGContextRestoreGState(context);
 }
